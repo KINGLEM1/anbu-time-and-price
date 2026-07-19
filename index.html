@@ -1,0 +1,1522 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ANBU — Time &amp; Price</title>
+<link rel="icon" type="image/png" href="images/favicon.png">
+<link rel="apple-touch-icon" href="images/favicon.png">
+<meta name="theme-color" content="#0a0708">
+<style>
+:root{--bg:#0a0708;--panel:rgba(18,14,13,.44);--panel2:rgba(28,22,20,.44);--text:#fffaf7;--text-2:#d8cdc6;--text-3:#a99d95;--crimson:#e0122b;--glow:rgba(224,18,43,.6);--jade:#2bd576;--amber:#e8a020;--line:rgba(255,255,255,.09);
+ --serif:'Trajan Pro','Copperplate','Palatino Linotype',Georgia,serif;--sans:-apple-system,system-ui,'Segoe UI',Roboto,sans-serif;--mono:ui-monospace,'Cascadia Code',Consolas,monospace;--w:1120px;--r:12px}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{background:#060404}
+body{font-family:var(--sans);padding:0 16px calc(88px + env(safe-area-inset-bottom))}
+body{background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;transition:background .6s ease}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(1600px 1100px at 50% 0%,rgba(224,18,43,.14),transparent 66%),radial-gradient(1200px 900px at 82% 100%,rgba(224,18,43,.10),transparent 64%),radial-gradient(1000px 800px at 12% 72%,rgba(224,18,43,.07),transparent 62%)}
+body[data-macro="killzone"]{background:radial-gradient(1800px 1300px at 50% 30%,rgba(224,18,43,.26),transparent 68%),var(--bg)}
+body[data-macro="killzone"]::before{background:radial-gradient(1800px 1300px at 50% 25%,rgba(224,18,43,.22),transparent 66%),radial-gradient(1400px 1000px at 50% 100%,rgba(224,18,43,.14),transparent 64%);animation:vignettePulse 3s ease-in-out infinite}
+@keyframes vignettePulse{0%,100%{opacity:.6}50%{opacity:1}}
+body[data-macro="tier2"]{background:radial-gradient(1650px 1150px at 50% 30%,rgba(224,18,43,.18),transparent 67%),var(--bg)}
+body[data-macro="tier2"]::before{background:radial-gradient(1650px 1150px at 50% 25%,rgba(224,18,43,.15),transparent 65%),radial-gradient(1200px 900px at 15% 85%,rgba(224,18,43,.08),transparent 62%);animation:amberPulse 4s ease-in-out infinite}
+@keyframes amberPulse{0%,100%{opacity:.5}50%{opacity:.85}}
+.sharingan-wrap{position:fixed;top:50%;left:50%;width:min(540px,92vw);height:min(540px,92vw);transform:translate(-50%,-50%);z-index:0;pointer-events:none;opacity:.2;transition:opacity .6s ease,filter .6s ease;will-change:transform,opacity}
+.sharingan-wrap svg{width:100%;height:100%;display:block}
+.sharingan-wrap .spin{width:100%;height:100%;animation:spin 26s linear infinite;transform-origin:50% 50%}
+body[data-macro="idle"] .sharingan-wrap{opacity:.2;filter:grayscale(.25) brightness(.75)}
+body[data-macro="tier2"] .sharingan-wrap{opacity:.28;filter:hue-rotate(-35deg) saturate(.75) brightness(.9) sepia(.25)}
+body[data-macro="tier2"] .sharingan-wrap .spin{animation:spin 14s linear infinite}
+body[data-macro="killzone"] .sharingan-wrap{opacity:.44;filter:none;animation:ignitePulse 2.5s ease-in-out infinite}
+body[data-macro="killzone"] .sharingan-wrap .spin{animation:spin 6s linear infinite}
+@keyframes ignitePulse{0%,100%{filter:drop-shadow(0 0 20px var(--glow)) drop-shadow(0 0 60px rgba(224,18,43,.3))}50%{filter:drop-shadow(0 0 40px var(--glow)) drop-shadow(0 0 100px rgba(224,18,43,.5))}}
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.sharingan-wrap .spin,body[data-macro="killzone"] .sharingan-wrap{animation:none!important}}
+.wrap{max-width:var(--w);margin:0 auto;position:relative;z-index:1}
+header.top{display:flex;align-items:center;gap:10px;padding:14px 2px 8px;flex-wrap:wrap}
+header.top .ak{width:11px;height:11px;border-radius:50%;background:var(--crimson);box-shadow:0 0 12px var(--glow),0 0 26px rgba(224,18,43,.5);flex:0 0 11px}
+header.top h1{font-family:var(--serif);font-size:16px;letter-spacing:3px;color:#fff}
+header.top h1 span{color:var(--crimson)}
+header.top .creed{margin-left:auto;text-align:right;font-family:var(--serif);font-style:italic;font-size:17.5px;line-height:1.5;letter-spacing:.6px;text-shadow:0 0 14px rgba(224,18,43,.35)}
+header.top .creed .c1{color:#f4d3d6}
+header.top .creed .c2{color:var(--crimson);font-style:normal;text-shadow:0 0 12px var(--glow)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;margin:10px 0}
+.ct{font-family:var(--serif);font-size:11px;letter-spacing:2px;color:var(--text-3);margin-bottom:8px}
+.note{color:var(--text-3);font-size:13px;line-height:1.5;padding:2px 4px}
+.tab{display:none}.tab.active{display:block}
+.clockwrap{text-align:center;padding:8px 0 2px}
+.clocklabel{font-family:var(--mono);font-size:10.5px;letter-spacing:4px;color:var(--text-3)}
+#bigClock{font-family:var(--mono);font-size:clamp(38px,5vw,52px);font-weight:700;letter-spacing:2px;color:#fff;text-shadow:0 0 22px var(--glow);line-height:1.05;margin:4px 0 2px}
+#clockDate{font-family:var(--mono);font-size:11.5px;color:var(--text-2);letter-spacing:1px}
+#stackRead{font-family:var(--mono);font-size:12.5px;letter-spacing:.4px;padding:8px 12px;border-radius:9px;border:1px solid var(--line);background:var(--panel2);margin-bottom:10px;text-align:center}
+#stackRead.s0{color:var(--text-3)}
+#stackRead.s1{color:var(--amber);border-color:rgba(232,160,32,.35)}
+#stackRead.s2{color:#fff;border-color:rgba(224,18,43,.45);box-shadow:0 0 14px rgba(224,18,43,.18)}
+#stackRead.s3{color:#fff;background:rgba(224,18,43,.14);border-color:var(--crimson);box-shadow:0 0 22px var(--glow)}
+.frow{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.factor{display:flex;align-items:flex-start;gap:8px;padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:var(--panel2);font-size:12.5px}
+.factor .dot{width:9px;height:9px;border-radius:50%;background:#2a2226;flex:0 0 9px;margin-top:4px}
+.factor .nm{flex:1}.factor .nm small{display:block;color:var(--text-3);font-size:11px;margin-top:2px;line-height:1.4}
+.factor .st{font-family:var(--mono);font-size:10px;letter-spacing:1px;color:var(--text-3);border:1px solid var(--line);border-radius:20px;padding:3px 8px;margin-top:2px;white-space:nowrap}
+.factor.on{border-color:rgba(224,18,43,.5)}
+.factor.on .dot{background:var(--crimson);box-shadow:0 0 10px var(--crimson)}
+.factor.on .st{color:var(--crimson);border-color:rgba(224,18,43,.5)}
+.wheel{position:relative;height:150px;overflow:hidden;perspective:760px;border-radius:12px;-webkit-mask-image:linear-gradient(180deg,transparent,#000 26%,#000 74%,transparent);mask-image:linear-gradient(180deg,transparent,#000 26%,#000 74%,transparent)}
+.whl-band{position:absolute;left:0;right:0;top:50%;height:46px;margin-top:-23px;border-top:1px solid rgba(224,18,43,.4);border-bottom:1px solid rgba(224,18,43,.4);background:rgba(224,18,43,.06);box-shadow:0 0 18px rgba(224,18,43,.12) inset}
+.witem{position:absolute;left:8px;right:8px;top:50%;height:46px;margin-top:-23px;display:flex;align-items:center;gap:12px;padding:0 14px;transition:transform .55s cubic-bezier(.22,.9,.28,1),opacity .45s;will-change:transform,opacity;backface-visibility:hidden;pointer-events:none}
+.witem .wt{font-family:var(--mono);font-size:15px;color:#fff;flex:0 0 54px;letter-spacing:1px}
+.witem .wn{flex:1;font-size:12.5px;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.witem .wcd{font-family:var(--mono);font-size:11.5px;color:var(--crimson);letter-spacing:.5px}
+.witem.ctr .wn{color:#fff}
+.witem.ctr .wt{text-shadow:0 0 10px var(--glow)}
+.chkhead{display:flex;align-items:center;gap:10px;margin:10px 0 8px;flex-wrap:wrap}
+.chkhead .dt{font-family:var(--mono);font-size:12px;color:var(--text-2)}
+#chkCount{margin-left:auto;font-family:var(--mono);font-size:13px;color:#fff}
+.btn{font-family:var(--mono);font-size:11px;letter-spacing:1px;color:var(--crimson);background:rgba(20,16,15,.6);border:1px solid rgba(224,18,43,.4);border-radius:9px;padding:9px 13px;cursor:pointer;min-height:40px}
+.btn:active{background:rgba(224,18,43,.15)}
+.btn.on{background:rgba(224,18,43,.16);color:#fff;box-shadow:0 0 12px rgba(224,18,43,.3)}
+#streakLine{display:flex;gap:14px;justify-content:center;font-family:var(--mono);font-size:11.5px;letter-spacing:1px;color:var(--text-3);margin-bottom:8px}
+#streakLine b{color:#fff;text-shadow:0 0 10px var(--glow)}
+#doneBanner{display:none;text-align:center;font-family:var(--mono);font-size:12px;letter-spacing:2px;color:#fff;border:1px solid var(--crimson);background:rgba(224,18,43,.12);border-radius:10px;padding:10px;margin-bottom:10px;box-shadow:0 0 20px rgba(224,18,43,.3)}
+.gt{font-family:var(--serif);font-size:11px;letter-spacing:2px;color:var(--crimson);margin:2px 2px 8px}
+.chkgrid{display:grid;grid-template-columns:1fr 1.7fr;gap:16px;align-items:start}
+#grpB{columns:2;column-gap:8px}
+#grpB.editing{columns:1}
+#tab-checklist.editing #grpA{columns:1}
+.chk{position:relative;display:flex;align-items:flex-start;gap:10px;width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:var(--panel);margin-bottom:8px;cursor:pointer;min-height:44px;user-select:none;break-inside:avoid}
+.chk input[type=checkbox]{position:absolute;opacity:0;pointer-events:none}
+.chk .box{flex:0 0 20px;width:20px;height:20px;border:1.5px solid rgba(255,255,255,.22);border-radius:6px;margin-top:1px;position:relative;transition:.15s}
+.chk input:checked~.box{background:var(--crimson);border-color:var(--crimson);box-shadow:0 0 12px var(--glow)}
+.chk input:checked~.box::after{content:"✓";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700}
+.chk .txt{font-size:13px;line-height:1.45;color:var(--text)}
+.chk input:checked~.txt{color:var(--text-3);text-decoration:line-through}
+.chk:active{border-color:var(--crimson)}
+.chk.edit{cursor:default;align-items:center}
+.chk.edit:active{border-color:var(--line)}
+.chk.edit .etxt{flex:1;background:transparent;border:none;border-bottom:1px dashed rgba(255,255,255,.14);color:var(--text);font-size:13px;line-height:1.4;font-family:var(--sans);padding:4px 2px;min-height:28px}
+.chk.edit .etxt:focus{outline:none;border-bottom-color:rgba(224,18,43,.5)}
+.addrow{display:flex;gap:6px;margin-bottom:8px;break-inside:avoid}
+.addrow .inp{flex:1}
+.caprow{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.cap{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 10px}
+.captag{font-family:var(--serif);font-size:10.5px;letter-spacing:2px;color:var(--crimson);margin-bottom:6px}
+.mbtn{width:100%;font-family:var(--mono);font-size:10px;letter-spacing:1px;color:#c98a91;background:none;border:1.5px dashed rgba(224,18,43,.3);border-radius:8px;padding:7px 4px;cursor:pointer;min-height:34px;margin-bottom:6px}
+.mbtn:active{border-color:var(--crimson);color:var(--crimson)}
+.thumbs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+.thumbs:empty{margin-bottom:0}
+.th{position:relative;display:inline-block}
+.th img{width:64px;height:44px;object-fit:cover;border-radius:7px;border:1px solid var(--line);display:block;cursor:pointer;background:#000}
+.th button{position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,.85);border:1px solid rgba(224,18,43,.5);color:var(--crimson);font-size:10px;line-height:1;cursor:pointer}
+.capnote{width:100%;background:#0d090a;border:1px solid var(--line);border-radius:8px;color:var(--text);font-family:var(--sans);font-size:12.5px;padding:8px 9px;min-height:34px}
+.capnote:focus{outline:none;border-color:rgba(224,18,43,.45)}
+.calhead{display:flex;align-items:center;margin:12px 0 6px}
+.calhead .m{font-family:var(--serif);font-size:13px;letter-spacing:2px;color:#fff;flex:1;text-align:center}
+.calhead button{background:var(--panel);border:1px solid var(--line);color:#fff;border-radius:9px;width:40px;height:40px;font-size:16px;cursor:pointer}
+.calhead button:active{border-color:var(--crimson)}
+#calView{display:flex;gap:6px;justify-content:center;margin:6px 0 10px}
+#calView .btn{min-height:34px;padding:6px 18px}
+.calwrap{max-width:380px;margin:0 auto}
+.calgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.calgrid .dn{font-family:var(--mono);font-size:10.5px;color:var(--text-3);text-align:center;padding:3px 0}
+.cell{position:relative;height:54px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;font-family:var(--mono);font-size:12.5px;color:var(--text);border-radius:8px;border:1px solid transparent;background:rgba(20,16,15,.45);cursor:pointer}
+.cell.blank{border:none;background:none;cursor:default}
+.cell .cs{font-size:9px;letter-spacing:.3px;line-height:1.2}
+.cell .cs.pos{color:var(--jade)}.cell .cs.neg{color:var(--crimson)}
+.cell .cs.st{color:var(--amber);text-shadow:0 0 6px rgba(232,160,32,.5)}
+.cell.today{border-color:rgba(255,255,255,.16)}
+.cell.sel{background:rgba(224,18,43,.85);color:#fff;box-shadow:0 0 14px var(--glow)}
+.cell.sel .cs.pos,.cell.sel .cs.neg,.cell.sel .cs.st{color:#fff}
+.cell.fut{color:var(--text-3)}
+#calFeed{display:none;max-height:62vh;overflow-y:auto;padding:0 4px}
+.feedCard{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px;cursor:pointer;transition:border-color .15s}
+.feedCard:active{border-color:var(--crimson)}
+.feedCard.sel{border-color:var(--crimson);box-shadow:0 0 12px rgba(224,18,43,.2)}
+.fcTop{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px}
+.fcDate{font-family:var(--mono);font-size:11px;color:var(--text-3);letter-spacing:.5px}
+.fcStars{color:var(--amber);font-size:12px;letter-spacing:1px;text-shadow:0 0 6px rgba(232,160,32,.4)}
+.fcPnl{font-family:var(--mono);font-size:14px;font-weight:700}
+.fcPnl.pos{color:var(--jade)}
+.fcPnl.neg{color:var(--crimson)}
+.fcPnl.fcNone{color:var(--text-3);font-size:12px;font-weight:400}
+.fcTcount{font-size:11px;color:var(--text-3);font-weight:400}
+.fcBetter{font-size:12px;color:var(--text-2);line-height:1.4;margin:4px 0;font-style:italic}
+.fcThumbs{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}
+.fcThumbs img{width:48px;height:34px;object-fit:cover;border-radius:5px;border:1px solid var(--line);cursor:pointer}
+.trow{display:flex;align-items:center;gap:10px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel2);margin-bottom:6px;font-size:12.5px}
+.trow .tp{font-family:var(--mono);font-size:13px;flex:0 0 84px}
+.trow .tp.pos{color:var(--jade)}.trow .tp.neg{color:var(--crimson)}
+.trow .tn{flex:1;color:var(--text-2);font-size:12px;line-height:1.4}
+.trm{background:none;border:none;color:var(--text-3);font-size:13px;cursor:pointer;padding:4px 6px}
+.trm:active{color:var(--crimson)}
+.tnone{color:var(--text-3);font-size:12.5px;padding:4px 2px 8px}
+.tadd{display:grid;grid-template-columns:130px 1fr auto;gap:6px;margin-top:8px}
+.inp{background:#0d090a;border:1px solid var(--line);border-radius:8px;color:var(--text);padding:9px 10px;font-family:var(--mono);font-size:12.5px;min-height:38px;width:100%}
+.inp:focus{outline:none;border-color:rgba(224,18,43,.45)}
+#tTotal{font-family:var(--mono);font-size:12px;letter-spacing:1px;color:#fff;margin-top:8px;text-align:right}
+.starrow{display:flex;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:10px}
+.grl{font-family:var(--serif);font-size:10px;letter-spacing:2px;color:var(--text-3)}
+.stars{display:flex;gap:2px}
+.stars button{background:none;border:none;font-size:22px;color:rgba(255,255,255,.16);cursor:pointer;padding:1px 4px;line-height:1;min-height:36px}
+.stars button.on{color:var(--amber);text-shadow:0 0 10px rgba(232,160,32,.65)}
+textarea{width:100%;background:#0d090a;border:1px solid var(--line);border-radius:9px;color:var(--text);font-family:var(--sans);font-size:13px;line-height:1.5;padding:10px;min-height:56px;resize:vertical}
+textarea:focus{outline:none;border-color:rgba(224,18,43,.45);box-shadow:0 0 10px rgba(224,18,43,.15)}
+details{border:1px solid var(--line);border-radius:var(--r);margin-bottom:8px;background:var(--panel);overflow:hidden}
+summary{padding:12px 14px;cursor:pointer;font-family:var(--serif);font-size:12.5px;letter-spacing:2px;color:#fff;list-style:none;display:flex;align-items:center;gap:10px;min-height:46px;user-select:none}
+summary::-webkit-details-marker{display:none}
+summary>span:first-child{flex:1}
+summary::after{content:"+";color:var(--crimson);font-size:18px;line-height:1;font-family:var(--sans);flex-shrink:0}
+details[open] summary::after{content:"–"}
+.secEdit{background:none;border:1px solid rgba(255,255,255,.15);color:var(--text-3);border-radius:6px;font-size:12px;padding:2px 7px;cursor:pointer;flex-shrink:0;font-family:var(--sans);line-height:1.4;min-height:24px}
+.secEdit:active{border-color:var(--crimson);color:var(--crimson)}
+.secEdit.on{color:var(--jade);border-color:rgba(43,213,118,.4)}
+.body.sec-editing{outline:1px dashed rgba(224,18,43,.4);outline-offset:4px;border-radius:4px}
+details .body{padding:0 14px 12px;color:var(--text-2);font-size:13.5px;line-height:1.6}
+details .body p{margin-bottom:8px}
+details .body ul,details .body ol{margin:0 0 8px 18px}
+details .body li{margin-bottom:6px}
+details .body b{color:var(--text)}
+details .body i{color:var(--text-3)}
+.red{color:var(--crimson)}
+.callout{border:1px solid rgba(224,18,43,.45);border-left:3px solid var(--crimson);border-radius:10px;background:rgba(224,18,43,.08);box-shadow:0 0 18px rgba(224,18,43,.14);padding:11px 13px;margin:0 0 14px}
+.callout h5{font-family:var(--serif);font-size:11.5px;letter-spacing:2px;color:var(--crimson);margin:0 0 6px}
+.callout p{font-size:13.5px;line-height:1.6;color:var(--text);margin:0}
+.phil h5{font-family:var(--serif);font-size:11.5px;letter-spacing:2px;color:var(--crimson);margin:0 0 8px}
+.ictcard{display:block;text-decoration:none;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;margin:10px 0 0;transition:border-color .15s}
+.ictcard:hover{border-color:rgba(224,18,43,.5)}
+.ictcard .ictt{display:block;font-family:var(--serif);font-size:11.5px;letter-spacing:2px;color:var(--crimson);margin-bottom:4px}
+.ictcard .ictn{display:block;font-size:12.5px;color:var(--text-2);line-height:1.5}
+.tlrow{display:flex;gap:10px;padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:var(--panel2);margin-bottom:6px;font-size:13px}
+.tlrow b{font-family:var(--mono);font-size:11px;color:var(--crimson);flex:0 0 88px;letter-spacing:.5px;padding-top:1px}
+.model{display:grid;grid-template-columns:1.15fr .85fr;gap:4px 14px;border:1px solid rgba(224,18,43,.18);border-left:3px solid var(--crimson);border-radius:10px;padding:12px;margin:10px 0;background:rgba(18,10,12,.78)}
+.model h4{grid-column:1/-1;font-family:var(--serif);color:#fff;font-size:13px;letter-spacing:1px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.badge{font-family:var(--mono);font-size:9.5px;padding:4px 9px;border:1px solid var(--crimson);border-radius:20px;color:var(--crimson);letter-spacing:1.5px;white-space:nowrap}
+.badge.ro{border-color:rgba(255,255,255,.18);color:var(--text-3)}
+.model .desc{font-size:13px;color:var(--text-2);line-height:1.55;margin-top:4px}
+.meta{display:grid;grid-template-columns:76px 1fr;gap:5px 10px;font-size:12.5px;margin-top:10px}
+.meta b{color:var(--text-3);font-weight:600;font-family:var(--mono);font-size:10.5px;letter-spacing:1px;padding-top:2px}
+.gal{display:flex;flex-direction:column;gap:6px;margin-top:2px}
+.gal img{width:100%;height:auto;max-height:180px;object-fit:cover;border-radius:8px;border:1px solid var(--line);cursor:zoom-in;background:#000;display:block}
+.gal img:active{border-color:var(--crimson)}
+.term{display:grid;grid-template-columns:104px 1fr;gap:6px 10px;font-size:13px;margin-bottom:7px}
+.term b{font-family:var(--mono);color:var(--crimson);font-size:11px;letter-spacing:.5px;padding-top:1px}
+#lbIG{position:fixed;inset:0;background:rgba(4,2,3,.96);z-index:100;display:none;overflow:hidden}
+#lbIG.on{display:flex}
+.lb-text{flex:0 0 38%;max-width:460px;overflow-y:auto;padding:60px 24px 24px;color:var(--text);border-right:1px solid var(--line);touch-action:pan-y}
+.lb-text h3{font-family:var(--serif);font-size:15px;letter-spacing:1px;color:#fff;margin-bottom:12px}
+.lb-text p{margin-bottom:10px;color:var(--text-2);font-size:13.5px;line-height:1.6}
+.lb-text .lb-meta{display:grid;grid-template-columns:auto 1fr;gap:5px 10px;margin-top:12px;font-size:12.5px}
+.lb-text .lb-meta b{color:var(--text-3);font-family:var(--mono);font-size:10.5px;letter-spacing:1px;padding-top:2px}
+.lb-text .lb-meta span{color:var(--text-2)}
+.lb-img{flex:1;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;touch-action:none;cursor:grab;min-width:0;min-height:0}
+.lb-img:active{cursor:grabbing}
+#lbImg{max-width:100%;max-height:100%;width:auto;height:auto;user-select:none;-webkit-user-drag:none;will-change:transform;transition:transform .12s ease-out}
+#lbImg.dragging{transition:none}
+#lbX{position:fixed;top:calc(12px + env(safe-area-inset-top));right:14px;z-index:102;background:rgba(0,0,0,.6);border:1px solid rgba(224,18,43,.5);color:#fff;border-radius:9px;font-family:var(--mono);font-size:12px;letter-spacing:1px;padding:8px 12px;cursor:pointer}
+#zIn,#zOut,#zReset{position:absolute;bottom:16px;background:rgba(0,0,0,.7);border:1px solid rgba(224,18,43,.5);color:#fff;border-radius:8px;font-family:var(--mono);font-size:16px;width:38px;height:38px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:101}
+#zReset{right:14px}
+#zOut{right:60px}
+#zIn{right:106px}
+#nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:var(--w);display:grid;grid-template-columns:repeat(4,1fr);background:rgba(10,7,8,.94);border-top:1px solid var(--line);backdrop-filter:blur(10px);padding-bottom:env(safe-area-inset-bottom);z-index:50}
+#nav button{background:none;border:none;color:var(--text-3);padding:8px 4px 9px;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;min-height:56px;font-family:var(--mono);font-size:10px;letter-spacing:1.5px}
+#nav svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+#nav button.on{color:var(--crimson);text-shadow:0 0 12px var(--glow)}
+#quoteCard{margin:10px 0}
+#quoteCard .qlbl{font-family:var(--serif);font-size:10px;letter-spacing:2px;color:var(--text-3);margin-bottom:6px}
+#quoteText{font-family:var(--serif);font-style:italic;font-size:14.5px;line-height:1.55;color:var(--text);margin-bottom:6px}
+#quoteSrc{font-family:var(--serif);font-size:11.5px;letter-spacing:1px;color:var(--crimson);text-shadow:0 0 10px rgba(224,18,43,.3)}
+@media (max-width:760px){.chkgrid{grid-template-columns:1fr;gap:4px}#grpA{columns:2;column-gap:8px}#grpB{columns:2;column-gap:8px}#tab-checklist.editing #grpA,#grpB.editing{columns:1}.phil{grid-template-columns:1fr}.model{grid-template-columns:1fr}.gal img{max-height:220px}#lbIG{flex-direction:column}.lb-text{flex:1;max-width:none;border-right:none;border-top:1px solid var(--line);order:2;padding:16px 16px 24px}.lb-img{flex:0 0 48vh;order:1;border-bottom:1px solid var(--line)}}
+@media (max-width:640px){.frow{grid-template-columns:1fr}.caprow{grid-template-columns:1fr}.tadd{grid-template-columns:1fr 1fr}}
+@media (max-width:540px){#grpA,#grpB{columns:1}header.top .creed{font-size:14.5px}}
+</style>
+</head>
+<body data-macro="idle">
+
+<!-- =========================================================================
+     3D / WebGL animated Sharingan background module  (self-contained fragment)
+     Raw WebGL fragment shader. No Three.js, no CDN, fully offline.
+     Sits BEHIND all UI (z-index:0, pointer-events:none). State-reactive via
+     document.body.dataset.macro : idle | tier2 | killzone.
+     ========================================================================= -->
+
+<!-- ===== /3D backdrop ===== -->
+
+
+
+
+<div class="sharingan-wrap" aria-hidden="true"><div class="spin">
+<svg class="sharingan" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<defs><radialGradient id="shGr"><stop offset="0" stop-color="#660000"/><stop offset="0.6" stop-color="#c30000"/><stop offset="1" stop-color="#a00000"/></radialGradient></defs>
+<circle cx="150" cy="150" r="145" fill="url(#shGr)" stroke="#000" stroke-width="10"/>
+<circle cx="150" cy="150" r="90" fill="none" stroke="#000" stroke-width="4" stroke-opacity="0.3"/>
+<g id="sh-tomoe"><circle cx="60" cy="150" r="20" fill="#000"/><path d="M 60,170 59.4,152.9 C 43.9,152.9 28.7,154.1 18.8,133.3 22.4,156 32.8,170 60,170 z" fill="#000"/></g>
+<use xlink:href="#sh-tomoe" transform="rotate(120 150 150)"/><use xlink:href="#sh-tomoe" transform="rotate(-120 150 150)"/>
+<circle cx="150" cy="150" r="25" fill="#000"/></svg></div></div>
+
+<div class="wrap">
+
+<header class="top">
+  <div class="ak"></div>
+  <h1>ANBU <span>·</span> TIME &amp; PRICE</h1>
+  <div class="creed"><span class="c1">There are no shortcuts to riches.</span><br><span class="c2">Stay disciplined to your system.</span></div>
+</header>
+
+<main>
+
+<!-- TAB 1 : CLOCK -->
+<section id="tab-clock" class="tab active">
+  <div class="card" id="quoteCard">
+    <div class="qlbl">QUOTE OF THE DAY</div>
+    <div id="quoteText">—</div>
+    <div id="quoteSrc">—</div>
+  </div>
+
+  <div class="clockwrap">
+    <div class="clocklabel">NEW YORK · ET</div>
+    <div id="bigClock">--:--:--</div>
+    <div id="clockDate">—</div>
+  </div>
+
+  <div class="card">
+    <div class="ct">PROBABILITY STACK</div>
+    <div id="stackRead" class="s0">— timing factors —</div>
+    <div class="frow">
+      <div class="factor" id="fKz"><span class="dot"></span><span class="nm">Kill Zone<small>xx:50–xx:09 — first / last 10 min of every 1H candle</small></span><span class="st">WAIT</span></div>
+      <div class="factor" id="fMc"><span class="dot"></span><span class="nm">Macro Window<small>09:50 · 10:50–11:10 · 11:50–12:10 · 12:50–13:10 (±10m)</small></span><span class="st">WAIT</span></div>
+      <div class="factor" id="f4h"><span class="dot"></span><span class="nm">4H Candle Open<small>02 · 06 · 10 · 14 · 18 · 22 (±15m)</small></span><span class="st">WAIT</span></div>
+    </div>
+    <p class="note" style="margin:10px 0 0;text-align:left">The stack is <b>not a gate</b> — you can take a trade outside a macro, and you don't have to take one inside it. Lit factors just mean <b class="red">more probability is on your side</b>. Stack them; know your odds.</p>
+  </div>
+
+  <div class="card">
+    <div class="ct">MACRO WHEEL — TIME ANCHORS</div>
+    <div class="wheel" id="wheel"></div>
+  </div>
+
+  <p class="note">Wheel auto-centers on the current / next macro and spins forward live. Kill zones &amp; macros are the highest-probability windows — stack them with model + checklist.</p>
+
+  <div class="gt" style="margin-top:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">DAILY DISCIPLINE — END OF DAY <button class="btn" id="dlyEdit" style="min-height:30px;padding:4px 9px">EDIT</button></div>
+  <div id="grpB"></div>
+</section>
+
+<!-- TAB 2 : CHECKLIST -->
+<section id="tab-checklist" class="tab">
+  <div class="chkhead">
+    <div class="dt" id="chkDate">—</div>
+    <div id="chkCount">0 / —</div>
+    <button class="btn" id="chkEdit">EDIT</button>
+    <button class="btn" id="chkReset">RESET</button>
+  </div>
+  <div id="streakLine">STREAK <b id="stCur">0</b> · BEST <b id="stBest">0</b></div>
+  <div id="doneBanner">DAY COMPLETE — DISCIPLINE KEPT</div>
+  <div class="chkgrid" style="grid-template-columns:1fr">
+    <div class="chkcol">
+      <div class="gt" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:2px 2px 8px">
+        <span>A+ SETUP</span>
+        <span id="aplusTrade" style="font-family:var(--mono);font-size:11px;color:#fff;letter-spacing:1px">TRADE 1</span>
+        <button class="btn" id="aplusPrev" style="min-height:30px;padding:4px 9px;font-size:13px;line-height:1">‹</button>
+        <button class="btn" id="aplusNext" style="min-height:30px;padding:4px 9px;font-size:13px;line-height:1">›</button>
+        <button class="btn" id="aplusNew" style="min-height:30px;padding:4px 9px">＋ NEXT TRADE</button>
+      </div>
+      <div id="grpA"></div>
+    </div>
+  </div>
+  <div class="gt" id="capTodayHeading" style="margin-top:10px">TRADE CAPTURE — TRADE 1 · CHECK OFF, THEN UPLOAD (PHOTO + NOTE)</div>
+  <div id="capToday" class="caprow"></div>
+</section>
+
+<!-- TAB 3 : CALENDAR -->
+<section id="tab-calendar" class="tab">
+
+  <div class="card">
+    <div class="ct" id="dayTitle">DAY — </div>
+    <div id="tradeList"></div>
+    <div class="tadd">
+      <input class="inp" id="tPnl" type="number" step="any" placeholder="P&L  e.g. 250 / -120">
+      <input class="inp" id="tNote" type="text" placeholder="note (optional) — model, setup">
+      <button class="btn" id="tAdd">ADD</button>
+    </div>
+    <div class="starrow">
+      <span class="grl">STAR GRADE — RULES / CHECKLIST FOLLOWED</span>
+      <span class="stars" id="dayStars"></span>
+    </div>
+    <div id="tTotal"></div>
+  </div>
+
+  <div class="gt" style="margin-top:10px">BEFORE / DURING / AFTER — <span id="capDateLbl"></span></div>
+  <div id="calCapture" class="caprow"></div>
+
+  <div class="card">
+    <div class="ct">WHAT I COULD HAVE DONE BETTER</div>
+    <textarea id="jBetter" placeholder="Honest review — one thing, written plainly."></textarea>
+  </div>
+
+  <div class="calhead">
+    <button id="calPrev">‹</button>
+    <div class="m" id="calMonth">—</div>
+    <button id="calNext">›</button>
+  </div>
+  <div id="calView">
+    <button class="btn on" data-view="grid">GRID</button>
+    <button class="btn" data-view="feed">FEED</button>
+  </div>
+  <div class="calwrap"><div class="calgrid" id="calGrid"></div></div>
+  <div id="calFeed"></div>
+</section>
+
+<!-- TAB 4 : MANUAL -->
+<section id="tab-manual" class="tab">
+
+  <details data-secid="core-philosophy" open><summary><span>CORE PHILOSOPHY</span><button class="secEdit" data-secid="core-philosophy">✎</button></summary><div class="body">
+    <div class="callout">
+      <h5>NARRATIVE OVER PATTERN-TRADING</h5>
+      <p>This is NOT pattern trading. The MODEL is the consistent framework, but every trade is DIFFERENT — what you actually trade is the <b class="red">NARRATIVE</b>: the real-time story of why price should deliver to a specific draw on liquidity, built from the day's confluences (HTF context, manipulation, time anchor, which liquidity is the draw, imbalances/key levels) plus experience and intuition. Same model, different narrative each session. If you can't articulate the narrative — why THIS delivery, to THIS target, NOW — you don't have a trade, you have a pattern guess. The checklist and model stack probability; <b>the narrative is what you're trading</b>.</p>
+    </div>
+    <div class="phil">
+      <h5>THE MARKET IS ENGINEERED</h5>
+      <p>The market is <b class="red">PREDETERMINED / algorithmic</b>, not random. If markets were truly driven by buyers vs sellers, profitable traders would be 50/50 and every day random — you could never have a repeatable model. Because there IS a repeatable time-and-price model, price delivery is engineered, not random.</p>
+      <p><b>EDGE = STACKING PROBABILITY.</b> You can trade inside OR outside a model or kill zone. The point of the model + kill zone + checklist is to stack confluences in your favor, lifting win rate from a random ~30-50% up to ~60-70%+. More factors stacked = higher probability. Never force a trade just because the clock says kill zone; never refuse one purely because it isn't — but know your odds.</p>
+      <p>A <b class="red">kill zone</b> = the last 10 min AND first 10 min of every 1-hour candle (xx:50–xx:09). Highest-probability time for a move — <b>NOT a mandatory gate</b>. The stack: HTF draw on liquidity → daily profile (AMD) → manipulation → time anchor → entry trigger, with kill-zone / macro timing layered on top. Each layer raises probability; no single layer is a signal by itself.</p>
+    </div>
+  </div></details>
+
+  <details id="psychLib" data-secid="psychology"><summary><span>PSYCHOLOGY — REFERENCE LIBRARY</span><button class="secEdit" data-secid="psychology">✎</button></summary><div class="body">
+    <ul>
+      <li><b>Room for error</b> — Build a massive margin of safety into every position so you can survive being wrong without ruin, ensuring you never need any single trade to survive. <i>(The Psychology of Money)</i></li>
+      <li><b>Growth mindset</b> — Treat every loss as tuition that develops your skill, refusing to view drawdowns as a permanent verdict on your innate ability. <i>(Mindset: The New Psychology of Success)</i></li>
+      <li><b>Self-image alignment</b> — Upgrade your self-image to that of a disciplined process-follower so that impulsive trades are automatically rejected as inconsistent with your identity. <i>(Psycho-Cybernetics)</i></li>
+      <li><b>Presence over prediction</b> — Anchor awareness in the current price action and your plan, disidentifying from mental noise about past losses or future profits to execute with objective clarity. <i>(The Power of Now)</i></li>
+      <li><b>Discipline as habit</b> — Execute your plan with mechanical consistency—do what you should do, when you should do it, whether you feel like it or not. <i>(The Power of Discipline)</i></li>
+      <li><b>Compound of small edges</b> — Master the mundane daily disciplines of journaling and review; small correct actions compound into massive trading edge over time. <i>(The Slight Edge)</i></li>
+      <li><b>The pause</b> — Use the space between market stimulus and your response to interrupt emotional defaults before they hijack your execution. <i>(Clear Thinking)</i></li>
+      <li><b>Hijack detection</b> — Recognize the physiological signs of an emotional hijack (tension, rushing) and pause immediately to prevent revenge trading. <i>(Emotional Intelligence 2.0)</i></li>
+      <li><b>Self-sabotage awareness</b> — Recognize that breaking rules after a loss is self-sabotage serving an unconscious need; address the root attachment rather than suppress the symptom. <i>(The Mountain Is You)</i></li>
+      <li><b>Dominant thought</b> — Keep dominant thoughts obsessively focused on flawless execution of edge, not on counting money, to magnetize disciplined outcomes. <i>(Attitude Is Everything)</i></li>
+      <li><b>Diligence over haste</b> — "The plans of the diligent lead surely to abundance, but everyone who is hasty comes only to want." <i>(Proverbs 21:5)</i></li>
+      <li><b>Slow wealth compounds</b> — "Wealth gained hastily will dwindle, but whoever gathers little by little will increase it." <i>(Proverbs 13:11)</i></li>
+      <li><b>The pause is power</b> — "Between stimulus and response there is a space; in that space is our power to choose our response." <i>(Viktor Frankl)</i></li>
+      <li><b>Command your mind, not events</b> — "You have power over your mind — not outside events. Realize this, and you will find strength." <i>(Marcus Aurelius)</i></li>
+      <li><b>Best trade, not most money</b> — "The goal of a successful trader is to make the best trades. Money is secondary." <i>(Alexander Elder)</i></li>
+    </ul>
+  </div></details>
+
+  <details data-secid="models"><summary><span>THE MODELS</span><button class="secEdit" data-secid="models">✎</button></summary><div class="body">
+
+    <p class="mnote"><b class="red">Discretion, not patterns:</b> these models are a <b>frame of mind, not rigid patterns</b>. Don't mechanically pattern-trade them — it's not always 1 + 1 = 2. Read the <b>NARRATIVE</b> and apply discretion (see Core Philosophy). The model is the frame; the narrative is what you trade.</p>
+
+    <p class="mnote"><b class="red">There are exactly FIVE models:</b> 9:30 Manipulation (read-only) · 9:30 Expansion · 10:00 Reversal · 10:00 Continuation · 10:00 Double Purge (the 5th and last). The Market-Maker Buy/Sell profiles at the bottom are <b>STRUCTURE, not models</b>. <b class="red">Every model applies to EACH 4H candle</b> — 02 · 06 · 10 · 14 · 18 · 22, not just the morning — and <b>that candle's opening price can be used as an order block</b> for the model running on it.</p>
+
+    <div class="model">
+      <h4>9:30 MANIPULATION <span class="badge ro">READ ONLY — NOT TRADED</span></h4>
+      <div class="mtxt">
+        <div class="desc">NOT a trade you take. Its job is to READ whether the market is being manipulated (is there a Judas swing at 9:30?). Use it to confirm manipulation and get your narrative — do NOT enter on it.</div>
+        <div class="meta"><b>STATUS</b><span>Read-only — narrative tool</span><b>TARGETS</b><span>None — confirms manipulation</span><b>STYLE</b><span>No entry</span><b>TIMING</b><span>9:30 RTH open</span></div>
+      </div>
+      <div class="gal">
+        <img src="images/930-manipulation-1.jpg" alt="9:30 Manipulation 1" loading="lazy" onerror="this.style.display='none'">
+        <img src="images/930-manipulation-2.jpg" alt="9:30 Manipulation 2" loading="lazy" onerror="this.style.display='none'">
+      </div>
+    </div>
+
+    <div class="model">
+      <h4>9:30 EXPANSION <span class="badge">TRADE — CONDITIONAL</span></h4>
+      <div class="mtxt">
+        <div class="desc">Tradeable ONLY if price RETRACES into the first presented fair value gap (the 9:30 gap). If there is no retrace into that gap → NO trade; wait for the 9:50 macro or 10:00. <b class="red">Two entry options:</b> (a) off the <b>first presented FVG</b>, OR (b) use the <b>9:30 opening price as an order block</b> and take the trade off that 9:30 opening price.</div>
+        <div class="meta"><b>STATUS</b><span>Traded — only on retrace into first FVG</span><b>TARGETS</b><span>INTERNAL — 9:30 first FVG + 9:30 opening price</span><b>STYLE</b><span>Quick scalp</span><b>TIMING</b><span>9:30 RTH open window</span></div>
+      </div>
+      <div class="gal">
+        <img src="images/930-expansion-1.jpg" alt="9:30 Expansion 1" loading="lazy" onerror="this.style.display='none'">
+        <img src="images/930-expansion-2.jpg" alt="9:30 Expansion 2" loading="lazy" onerror="this.style.display='none'">
+        <img src="images/930-expansion-3.jpg" alt="9:30 Expansion 3" loading="lazy" onerror="this.style.display='none'">
+        <img src="images/930-expansion-4.jpg" alt="9:30 Expansion 4" loading="lazy" onerror="this.style.display='none'">
+      </div>
+    </div>
+
+    <div class="model">
+      <h4>10:00 REVERSAL <span class="badge">MAIN — TRADE</span></h4>
+      <div class="mtxt">
+        <div class="desc">The MAIN model you trade. Can begin from 9:50 (the macro) because the reversal can start before the 4H candle opens at 10:00. HOLD for longer; targets EXTERNAL liquidity (session / day highs and lows). The 4H candle gives room to run to external targets. <b class="red">Entry:</b> off <b>10:00 + the first presented FVG</b>, OR use the <b>10:00 opening price as an order block</b>. <b class="red">Direction gate —</b> LONG (up): price must be <b>HOLDING ABOVE the 10:00 opening price AND above the first presented FVG</b>. SHORT (down) is the mirror: price holding <b>BELOW both</b>. <b class="red">Opening price as an order block:</b> close ABOVE the 10:00 opening price while bullish → use it as an <b>order block</b> to keep going higher; close BELOW it while bearish → use it as an order block to keep going lower. If price then <b>can't hold that direction / loses momentum</b>, that same level flips and acts as a <b class="red">BREAKER block</b>. <b>Note:</b> sometimes price will <b>NOT retest the first presented gap</b> at all — in that case you simply use the <b>10:00 opening price as the order block</b>.</div>
+        <div class="meta"><b>STATUS</b><span>Traded — primary model</span><b>TARGETS</b><span>EXTERNAL — session / day highs &amp; lows</span><b>STYLE</b><span>Hold longer — scale out, leave a runner</span><b>TIMING</b><span>From 9:50 macro → 10:00 4H open</span></div>
+      </div>
+      <div class="gal">
+        <img src="images/1000-reversal-best.jpg" alt="10:00 Reversal — best example" loading="lazy" onerror="this.style.display='none'">
+        <img src="images/1000-reversal-1.jpg" alt="10:00 Reversal 1" loading="lazy" onerror="this.style.display='none'">
+        <img src="images/1000-reversal-2.jpg" alt="10:00 Reversal 2" loading="lazy" onerror="this.style.display='none'">
+      </div>
+    </div>
+
+    <div class="model">
+      <h4>10:00 CONTINUATION <span class="badge">TRADE</span></h4>
+      <div class="mtxt">
+        <div class="desc">Sibling of the 10:00 Reversal — same 9:50 macro / 10:00 4H-open core, trading continuation of the higher-timeframe draw when price continues rather than reverses. Rule of thumb: INTERNAL liquidity (gaps, opening prices) → quick scalp; EXTERNAL liquidity (highs/lows) → hold longer.</div>
+        <div class="meta"><b>STATUS</b><span>Traded</span><b>TARGETS</b><span>EXTERNAL — session / day highs &amp; lows</span><b>STYLE</b><span>Hold longer — scale out, leave a runner</span><b>TIMING</b><span>From 9:50 macro → 10:00 4H open</span></div>
+      </div>
+      <div class="gal">
+        <img src="images/1000-continuation-1.jpg" alt="10:00 Continuation 1" loading="lazy" onerror="this.style.display='none'">
+        <img src="images/1000-continuation-2.jpg" alt="10:00 Continuation 2" loading="lazy" onerror="this.style.display='none'">
+        <img src="images/1000-continuation-3.jpg" alt="10:00 Continuation 3" loading="lazy" onerror="this.style.display='none'">
+      </div>
+    </div>
+
+    <div class="model">
+      <h4>10:00 DOUBLE PURGE <span class="badge">TRADE — REVERSAL</span></h4>
+      <div class="mtxt">
+        <div class="desc">The failure-of-continuation reversal — the <b class="red">5th and LAST model</b>. <b>Setup:</b> the target is NOT yet hit, but price <b>can't keep pushing higher OR lower</b> — it stalls at the 9:30 / 10:00 window. <b>The tell:</b> price <b class="red">fails to hold</b> above the first presented gap + the 10:00 opening-price order block (for an expected long) — the continuation is failing. <b>The trade:</b> instead of continuing the same direction (don't buy the top), take the <b class="red">OPPOSITE direction</b> — the failed continuation becomes the reversal. <b>Example:</b> 9:30 Expansion → 10:00 Continuation expected, but at 10:00 price can't reach targets and can't hold above the first FVG + 10:00 opening-price OB → Double Purge → take the short instead of buying the top.</div>
+        <div class="meta"><b>STATUS</b><span>Traded — reversal on failed continuation</span><b>TARGETS</b><span>Opposite draw — the liquidity that gets swept</span><b>STYLE</b><span>Reversal — read the failure</span><b>TIMING</b><span>9:30 / 10:00 window, target not yet hit</span></div>
+      </div>
+      <div class="gal">
+        <img src="images/1000-double-purge-1.jpg" alt="10:00 Double Purge example" loading="lazy" onerror="this.style.display='none'">
+      </div>
+    </div>
+
+    <div class="model">
+      <h4>MARKET-MAKER BUY PROFILE (MMBM) <span class="badge ro">STRUCTURE — NOT ONE OF THE 5 MODELS</span></h4>
+      <div class="mtxt">
+        <div class="desc">The buy-side market-maker profile: consolidation → sell-side sweep (manipulation) → expansion to buy-side liquidity (distribution). Runs on <b>ANY 4H candle</b> — 02 · 06 · 10 · 14 · 18 · 22 — the same time-and-price logic as the morning models, not just the morning.</div>
+        <div class="meta"><b>STATUS</b><span>Traded</span><b>TARGETS</b><span>Buy-side liquidity / HTF draw</span><b>STYLE</b><span>Model-driven hold</span><b>TIMING</b><span>Any 4H candle open</span></div>
+      </div>
+      <div class="gal">
+        <img src="images/mmxm-buy-1.jpg" alt="MMBM 1" loading="lazy" onerror="this.style.display='none'">
+        <img src="images/mmxm-buy-2.jpg" alt="MMBM 2" loading="lazy" onerror="this.style.display='none'">
+        <img src="images/mmxm-buy-3.jpg" alt="MMBM 3" loading="lazy" onerror="this.style.display='none'">
+        <img src="images/mmxm-buy-4.jpg" alt="MMBM 4" loading="lazy" onerror="this.style.display='none'">
+      </div>
+    </div>
+
+    <div class="model">
+      <h4>MARKET-MAKER SELL PROFILE (MMSM) <span class="badge ro">STRUCTURE — NOT ONE OF THE 5 MODELS</span></h4>
+      <div class="mtxt">
+        <div class="desc">The sell-side market-maker profile: consolidation → buy-side sweep (manipulation) → expansion to sell-side liquidity (distribution). Runs on <b>ANY 4H candle</b> — 02 · 06 · 10 · 14 · 18 · 22 — the same time-and-price logic as the morning models, not just the morning.</div>
+        <div class="meta"><b>STATUS</b><span>Traded</span><b>TARGETS</b><span>Sell-side liquidity / HTF draw</span><b>STYLE</b><span>Model-driven hold</span><b>TIMING</b><span>Any 4H candle open</span></div>
+      </div>
+      <div class="gal">
+        <img src="images/mmxm-sell-1.jpg" alt="MMSM 1" loading="lazy" onerror="this.style.display='none'">
+        <img src="images/mmxm-sell-2.jpg" alt="MMSM 2" loading="lazy" onerror="this.style.display='none'">
+        <img src="images/mmxm-sell-3.jpg" alt="MMSM 3" loading="lazy" onerror="this.style.display='none'">
+      </div>
+    </div>
+
+  </div></details>
+  <details data-secid="bias"><summary><span>BIAS — DIRECTIONAL FRAMEWORK</span><button class="secEdit" data-secid="bias">✎</button></summary><div class="body">
+    <p>Bias is <b class="red">NOT one direction you must marry</b>. It is layered:</p>
+    <ul>
+      <li><b>HTF compass — Weekly / Monthly:</b> the long-term directional compass. It gives context: the draw on liquidity and which side is being delivered over days/weeks.</li>
+      <li><b>Daily / 4H — the delivery you actually trade:</b> you execute the candle in front of you. Even on a day that is bullish on the Daily, you can take a <b>SHORT on the 4H</b> if that 4H candle is delivering down.</li>
+    </ul>
+    <p><b>RULE:</b> respect the HTF compass for context, but trade the candle in front of you — a valid lower-timeframe setup is <b>not cancelled</b> by a higher-timeframe bias.</p>
+  </div></details>
+
+  <details data-secid="timeframe-ladder"><summary><span>TIMEFRAME LADDER</span><button class="secEdit" data-secid="timeframe-ladder">✎</button></summary><div class="body">
+    <div class="tlrow"><b>COMPASS</b><span>Weekly / Monthly — long-term directional compass (context)</span></div>
+    <div class="tlrow"><b>DELIVERY</b><span>Daily / 4H — the candles you actually trade</span></div>
+    <div class="tlrow"><b>STRUCTURE</b><span>4H / 1H — premium/discount arrays, order blocks</span></div>
+    <div class="tlrow"><b>SETUP</b><span>15m / 5m — structure, liquidity sweeps, market-maker profiles</span></div>
+    <div class="tlrow"><b>EXECUTION</b><span>1m / 15s — entry triggers, max R:R</span></div>
+  </div></details>
+
+  <details data-secid="time-anchors"><summary><span>TIME ANCHORS &amp; 4H OPENS</span><button class="secEdit" data-secid="time-anchors">✎</button></summary><div class="body">
+    <ul>
+      <li><b>09:00</b> — 9:00 AM opening price: an IMPORTANT key level.</li>
+      <li><b>09:30</b> — RTH open. Home of the 9:30 Manipulation and 9:30 Expansion models.</li>
+      <li><b>09:50</b> — 9:50 macro. The 10:00 reversal can begin trading FROM 9:50 (reversal can start before the 4H candle opens).</li>
+      <li><b>10:00</b> — institutional 4H candle open. Core of the 10:00 Reversal / Continuation model.</li>
+      <li><b>10:50–11:10</b>, <b>11:50–12:10</b> (Tier-2 backup) and <b>12:50–13:10</b> — mid-morning / afternoon macro delivery blocks.</li>
+      <li><b>18:00</b> and <b>00:00 (Midnight)</b> — opening-price anchors.</li>
+    </ul>
+    <p><b>ALL FOUR-HOUR CANDLES ARE TRADEABLE:</b> every new 4H institutional candle open is a valid time-and-price anchor, not just the morning. NY 4H opens: <span class="red">02:00 · 06:00 · 10:00 · 14:00 · 18:00 · 22:00</span>.</p>
+  </div></details>
+  <details data-secid="htf-sponsorship"><summary><span>HIGHER-TIMEFRAME SPONSORSHIP</span><button class="secEdit" data-secid="htf-sponsorship">✎</button></summary><div class="body">
+    <p>Every delivery needs <b class="red">higher-timeframe sponsorship</b> — an HTF Premium/Discount array (a <b>PDRA</b>: a 4H FVG, order block, etc.) that the move draws from or to. Premium vs discount is <b>contextual</b> — read it against the RANGE <i>and</i> the HTF PD array, not statically.</p>
+    <p><b>Key insight:</b> an HTF array's role depends on the <b>directional narrative</b>, not just where price sits in a range. Example: a <b>4H bullish FVG</b> — even if price is in deep <i>discount</i> within a range, if the bias is <b class="red">bearish</b> and price taps up into that higher-timeframe gap, the gap can act as an area of discount that <b>sponsors a further move DOWN</b>. And vice-versa: a bearish HTF array in premium can sponsor a further move UP on a bullish narrative.</p>
+    <p><b>Takeaway:</b> don't read premium/discount off the range alone — the HTF PD array is the sponsor; the <b>narrative decides which way it fuels</b>.</p>
+  </div></details>
+
+  <details data-secid="aplus-checklist"><summary><span>A+ 5-PART CHECKLIST</span><button class="secEdit" data-secid="aplus-checklist">✎</button></summary><div class="body">
+    <p><b class="red">FIRST — THE GATE:</b> Can I articulate the <b>NARRATIVE</b>? (why this delivery, to this target, now — confluences + read, not shape-matching). If you can't articulate it, you don't have a trade — you have a pattern guess.</p>
+    <ol>
+      <li><b>Isolate the higher-timeframe Draw on Liquidity</b> (Daily/Weekly/4H). The DOL is <b class="red">NOT only session/day highs &amp; lows</b> — targets also include the <b>9:30 high or low</b>, the <b>9:00 AM pre-market high/low</b>, INTERNAL liquidity (the <b>9:30 opening price</b>, the <b>9:30 first presented gap / FVG</b>, the <b>10:00 opening price</b>), and imbalances (fair value gaps), opening prices and key levels generally. Rule: internal draws → quick scalp; external draws (highs/lows) → 10:00 hold.</li>
+      <li><b>Identify the active daily profile</b> (AMD — Accumulation/Manipulation/Distribution); confirm the Asian session consolidated to build the liquidity baseline.</li>
+      <li><b>Verify institutional manipulation:</b> a fast counter-trend Judas leg that sweeps the Asian range / a short-term high or low, or taps an HTF fair value gap (read this via the 9:30 manipulation model).</li>
+      <li><b>Enforce the time-and-price anchor:</b> manipulation/entry coincides with a fixed anchor (9:00, 9:30, 9:50, 10:00, a 4H open, 6PM, or Midnight).</li>
+      <li><b>Confirm the entry trigger</b> on the execution timeframe (1m/15s): inversion FVG or opening-price rejection. Kill-zone / macro timing adds probability (not required).</li>
+    </ol>
+    <p>All five stack the probability.</p>
+  </div></details>
+
+  <details data-secid="exits-runners"><summary><span>TIME-BASED EXITS &amp; RUNNERS</span><button class="secEdit" data-secid="exits-runners">✎</button></summary><div class="body">
+    <p><b>Time-based exit discipline:</b> exit when the delivery block ends or the target is hit — regardless of how much momentum seems left.</p>
+    <p><b class="red">LEAVE A RUNNER:</b> you do NOT have to fully close at the time-based exit. <b>Scale out</b> at the target / block-end and leave a runner — let a portion run in case delivery extends. Banking most of the position is mandatory; closing every last contract is not.</p>
+  </div></details>
+
+  <details data-secid="prohibited"><summary><span>PROHIBITED CONDITIONS</span><button class="secEdit" data-secid="prohibited">✎</button></summary><div class="body">
+    <ul>
+      <li><b class="red">FOMC weeks</b> and immediate high-impact news = banned. True no-trade — volatile graveyards.</li>
+      <li><b class="red">First week of the calendar month = LOWER PROBABILITY</b> — NOT a no-trade window. Don't expect big expansion; take normal <b>SCALPS</b> instead of swinging for external targets.</li>
+      <li><b class="red">After the primary intraday objective is hit</b> = stop; no late-session consolidation trades (the late-session graveyard).</li>
+    </ul>
+  </div></details>
+
+  <details data-secid="terminology"><summary><span>TERMINOLOGY</span><button class="secEdit" data-secid="terminology">✎</button></summary><div class="body">
+    <div class="term"><b>PO3</b><span>Power of Three (Accumulation–Manipulation–Distribution)</span></div>
+    <div class="term"><b>MMBM / MMSM</b><span>Market Maker Buy / Sell Model — runs on ANY 4H candle</span></div>
+    <div class="term"><b>JUDAS SWING</b><span>Fake counter-trend leg that engineers liquidity</span></div>
+    <div class="term"><b>DOL</b><span>Draw on Liquidity — NOT only session/day highs &amp; lows. Targets also include the 9:30 high or low; the 9:00 AM pre-market high/low; INTERNAL liquidity like the 9:30 opening price, the 9:30 first presented gap (FVG), and the 10:00 opening price; and imbalances (fair value gaps), opening prices, and key levels generally. Rule: internal draws → quick scalp; external draws (highs/lows) → 10:00 hold.</span></div>
+    <div class="term"><b>INTERNAL LIQ</b><span>FVGs / opening prices / key levels — scalp targets</span></div>
+    <div class="term"><b>EXTERNAL LIQ</b><span>Session / day highs &amp; lows — hold targets</span></div>
+    <div class="term"><b>PDRA</b><span>Pre-Delivery Range Array</span></div>
+    <div class="term"><b>FVG</b><span>Fair Value Gap</span></div>
+    <div class="term"><b>AMD</b><span>Accumulation–Manipulation–Distribution</span></div>
+    <div class="term"><b>RUNNER</b><span>Portion left running after scaling out at target / block-end</span></div>
+    <div class="term"><b>KILL ZONE</b><span>First / last 10 min of each 1H candle — a probability confluence, not a gate</span></div>
+  </div></details>
+
+  <a class="ictcard" href="https://x10hop.com/" target="_blank" rel="noopener">
+    <span class="ictt">ICT CONCEPTS ↗</span>
+    <span class="ictn">These are the prerequisite ICT concepts Anbu assumes — opens the external reference in a new tab.</span>
+  </a>
+
+</section>
+</main>
+
+</div><!-- /wrap -->
+
+<nav id="nav">
+  <button data-tab="clock" class="on"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>CLOCK</button>
+  <button data-tab="checklist"><svg viewBox="0 0 24 24"><path d="M4 6l1.5 1.5L8 5"/><path d="M4 12l1.5 1.5L8 11"/><path d="M4 18l1.5 1.5L8 17"/><path d="M11 6h9M11 12h9M11 18h9"/></svg>CHECKLIST</button>
+  <button data-tab="calendar"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 10h16M8 3v4M16 3v4"/></svg>CALENDAR</button>
+  <button data-tab="manual"><svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h14v16H6a2 2 0 0 0-2 2V5z"/><path d="M4 19a2 2 0 0 1 2-2h14"/><path d="M9 7h7"/></svg>MANUAL</button>
+</nav>
+
+<div id="lbIG">
+  <button id="lbX">ESC · CLOSE</button>
+  <div class="lb-text" id="lbText"></div>
+  <div class="lb-img" id="lbImgPane">
+    <img id="lbImg" alt="model screenshot">
+    <button id="zIn" title="Zoom in">+</button>
+    <button id="zOut" title="Zoom out">−</button>
+    <button id="zReset" title="Reset">⟲</button>
+  </div>
+</div>
+
+<input type="file" id="filePhoto" accept="image/*" hidden>
+
+<script>
+(function(){
+"use strict";
+const $=s=>document.querySelector(s), $$=s=>document.querySelectorAll(s);
+const pad=n=>String(n).padStart(2,"0");
+const keyOf=(y,m,d)=>y+"-"+pad(m)+"-"+pad(m?d:d);
+const fmtT=min=>pad(Math.floor(min/60))+":"+pad(min%60);
+const escH=s=>(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;");
+const escA=s=>(s||"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");
+const fmtPnl=v=>{const a=Math.abs(Math.round(v*100)/100);return (v>=0?"+$":"-$")+a;};
+
+function nyParts(){
+  const f=new Intl.DateTimeFormat("en-US",{timeZone:"America/New_York",hour12:false,year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit",weekday:"long"});
+  const p={}; f.formatToParts(new Date()).forEach(x=>p[x.type]=x.value);
+  let h=+p.hour; if(h===24)h=0;
+  return {h:h,m:+p.minute,s:+p.second,y:+p.year,mo:+p.month,d:+p.day,wd:p.weekday};
+}
+function todayKey(){const p=nyParts();return keyOf(p.y,p.mo,p.d);}
+function lsGet(k,f){try{const v=localStorage.getItem(k);return v?JSON.parse(v):f;}catch(e){return f;}}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true;}catch(e){return false;}}
+
+/* ---------- DAILY QUOTE ---------- */
+const QUOTES=[
+ {t:"The plans of the diligent lead surely to abundance, but everyone who is hasty comes only to want.",s:"Proverbs 21:5"},
+ {t:"Wealth gained hastily will dwindle, but whoever gathers little by little will increase it.",s:"Proverbs 13:11"},
+ {t:"You do not rise to the level of your goals. You fall to the level of your systems.",s:"James Clear"},
+ {t:"The market is a device for transferring money from the impatient to the patient.",s:"Warren Buffett"},
+ {t:"It never was my thinking that made the big money for me. It always was my sitting.",s:"Jesse Livermore"},
+ {t:"We suffer more often in imagination than in reality.",s:"Seneca"},
+ {t:"You have power over your mind — not outside events. Realize this, and you will find strength.",s:"Marcus Aurelius"},
+ {t:"The slight edge is doing the small, easy things that are also easy not to do.",s:"Jeff Olson"},
+ {t:"Amateurs think about how much they can make. Professionals think about how much they can lose.",s:"Jack Schwager"},
+ {t:"No discipline seems pleasant at the time, but painful; later it yields a harvest of peace.",s:"Hebrews 12:11"},
+ {t:"Whoever is faithful with very little can be trusted with much.",s:"Luke 16:10"},
+ {t:"Between stimulus and response there is a space; in that space is our power to choose.",s:"Viktor Frankl"},
+ {t:"Confidence is not 'I will profit on this trade.' It is 'I will be fine if I do not.'",s:"Mark Douglas"},
+ {t:"The market can stay irrational longer than you can stay solvent.",s:"John Maynard Keynes"},
+ {t:"Every battle is won before it is ever fought.",s:"Sun Tzu"},
+ {t:"Do not pray for an easy life; pray for the strength to endure a difficult one.",s:"Bruce Lee"},
+ {t:"The successful warrior is the average man, with laser-like focus.",s:"Bruce Lee"},
+ {t:"The goal of a successful trader is to make the best trades. Money is secondary.",s:"Alexander Elder"},
+ {t:"Risk comes from not knowing what you are doing.",s:"Warren Buffett"},
+ {t:"Which of you, building a tower, does not first sit down and count the cost?",s:"Luke 14:28"},
+ {t:"The love of money is a root of all kinds of evil.",s:"1 Timothy 6:10"},
+ {t:"Cut your losses quickly and let your profits run.",s:"Trading maxim"},
+ {t:"Patience is not the ability to wait, but to keep a good attitude while waiting.",s:"Joyce Meyer"},
+ {t:"Whatever you do, work at it with all your heart.",s:"Colossians 3:23"},
+ {t:"Fall down seven times, stand up eight.",s:"Japanese proverb"},
+ {t:"The self-sabotage and the resistance is you — and so is the way through.",s:"Brianna Wiest"},
+ {t:"He who is greedy for gain troubles his own house.",s:"Proverbs 15:27"},
+ {t:"Discipline is choosing between what you want now and what you want most.",s:"Anonymous"},
+ {t:"Trade the process, not the payout.",s:"ANBU"},
+ {t:"There are no shortcuts to riches. Stay disciplined to your system.",s:"ANBU"},
+{t:"The impediment to action advances action. What stands in the way becomes the way.",s:"Marcus Aurelius"},
+ {t:"Waste no more time arguing what a good man should be. Be one.",s:"Marcus Aurelius"},
+ {t:"If it is not right, do not do it; if it is not true, do not say it.",s:"Marcus Aurelius"},
+ {t:"Luck is what happens when preparation meets opportunity.",s:"Seneca"},
+ {t:"It is not that we have a short time to live, but that we waste much of it.",s:"Seneca"},
+ {t:"He who is brave is free.",s:"Seneca"},
+ {t:"No man is free who is not master of himself.",s:"Epictetus"},
+ {t:"It is not what happens to you, but how you react to it that matters.",s:"Epictetus"},
+ {t:"First say to yourself what you would be; then do what you have to do.",s:"Epictetus"},
+ {t:"Wealth consists not in having great possessions, but in having few wants.",s:"Epictetus"},
+ {t:"No trade is often the best trade.",s:"Trading maxim"},
+ {t:"The best revenge is not to be like your enemy.",s:"Marcus Aurelius"},
+ {t:"Every action you take is a vote for the person you wish to become.",s:"James Clear"},
+ {t:"You do not have to be great to start, but you have to start to be great.",s:"Zig Ziglar"},
+ {t:"Discipline equals freedom.",s:"Jocko Willink"},
+ {t:"Don't count the days, make the days count.",s:"Muhammad Ali"},
+ {t:"The obstacle is the way.",s:"Ryan Holiday"},
+ {t:"Ego is the enemy of what you want.",s:"Ryan Holiday"},
+ {t:"Whether you think you can or think you can't, you're right.",s:"Henry Ford"},
+ {t:"A goal without a plan is just a wish.",s:"Antoine de Saint-Exupery"},
+ {t:"Patience, persistence and perspiration make an unbeatable combination for success.",s:"Napoleon Hill"},
+ {t:"Whatever the mind can conceive and believe, it can achieve.",s:"Napoleon Hill"},
+ {t:"Do not wait; the time will never be just right.",s:"Napoleon Hill"},
+ {t:"Losers average losers.",s:"Paul Tudor Jones"},
+ {t:"Don't focus on making money; focus on protecting what you have.",s:"Paul Tudor Jones"},
+ {t:"The elements of good trading are cutting losses, cutting losses, and cutting losses.",s:"Ed Seykota"},
+ {t:"Win or lose, everybody gets what they want out of the market.",s:"Ed Seykota"},
+ {t:"The market rewards those who can sit and wait.",s:"Trading maxim"},
+ {t:"There is a time to go long, a time to go short, and a time to go fishing.",s:"Jesse Livermore"},
+ {t:"The game taught me the game. And it didn't spare the rod.",s:"Jesse Livermore"},
+ {t:"Markets are never wrong; opinions often are.",s:"Jesse Livermore"},
+ {t:"The desire for constant action irrespective of underlying conditions is responsible for many losses.",s:"Jesse Livermore"},
+ {t:"Be fearful when others are greedy, and greedy when others are fearful.",s:"Warren Buffett"},
+ {t:"The stock market transfers money from the active to the patient.",s:"Warren Buffett"},
+ {t:"Rule No. 1: never lose money. Rule No. 2: never forget Rule No. 1.",s:"Warren Buffett"},
+ {t:"Predicting rain doesn't count; building arks does.",s:"Warren Buffett"},
+ {t:"In investing, what is comfortable is rarely profitable.",s:"Robert Arnott"},
+ {t:"The four most dangerous words in investing are: this time it's different.",s:"John Templeton"},
+ {t:"I'm always thinking about losing money as opposed to making money.",s:"Paul Tudor Jones"},
+ {t:"Trading is a waiting game. You sit, you wait, and you make a lot at once.",s:"Michael Marcus"},
+ {t:"The trend is your friend until the end when it bends.",s:"Trading maxim"},
+ {t:"Plan your trade and trade your plan.",s:"Trading maxim"},
+ {t:"The consistency you seek is in your mind, not in the markets.",s:"Mark Douglas"},
+ {t:"Trading is a probability game; you don't need to know what happens next to make money.",s:"Mark Douglas"},
+ {t:"Anything can happen. You don't need to know what is next to profit.",s:"Mark Douglas"},
+ {t:"The goal is not to be right; the goal is to make money.",s:"Trading maxim"},
+ {t:"Risk enough that a win matters, never so much that a loss ruins you.",s:"Ed Seykota"},
+ {t:"Amateurs want to be right. Professionals want to make money.",s:"Ray Dalio"},
+ {t:"He who knows when he can fight and when he cannot will be victorious.",s:"Sun Tzu"},
+ {t:"In the midst of chaos, there is also opportunity.",s:"Sun Tzu"},
+ {t:"Opportunities multiply as they are seized.",s:"Sun Tzu"},
+ {t:"The supreme art of war is to subdue the enemy without fighting.",s:"Sun Tzu"},
+ {t:"Do nothing which is of no use.",s:"Miyamoto Musashi"},
+ {t:"Think lightly of yourself and deeply of the world.",s:"Miyamoto Musashi"},
+ {t:"There is more than one path to the top of the mountain.",s:"Miyamoto Musashi"},
+ {t:"Perceive that which cannot be seen with the eye.",s:"Miyamoto Musashi"},
+ {t:"I fear the man who has practiced one kick 10,000 times.",s:"Bruce Lee"},
+ {t:"Be water, my friend.",s:"Bruce Lee"},
+ {t:"Knowing is not enough, we must apply. Willing is not enough, we must do.",s:"Bruce Lee"},
+ {t:"Commit to the Lord whatever you do, and he will establish your plans.",s:"Proverbs 16:3"},
+ {t:"A prudent person foresees danger and takes precautions; the simple go blindly on.",s:"Proverbs 27:12"},
+ {t:"Where there is no guidance a people falls, but in many counselors there is safety.",s:"Proverbs 11:14"},
+ {t:"Better a little with righteousness than much gain with injustice.",s:"Proverbs 16:8"},
+ {t:"Do you see a man skilled in his work? He will stand before kings.",s:"Proverbs 22:29"},
+ {t:"Whoever loves discipline loves knowledge.",s:"Proverbs 12:1"},
+ {t:"The end of a matter is better than its beginning, and patience better than pride.",s:"Ecclesiastes 7:8"},
+ {t:"To everything there is a season, and a time to every purpose under heaven.",s:"Ecclesiastes 3:1"},
+ {t:"Cast your bread upon the waters, for you will find it after many days.",s:"Ecclesiastes 11:1"},
+ {t:"Let us not grow weary of doing good, for in due season we will reap if we do not give up.",s:"Galatians 6:9"},
+ {t:"I have learned, in whatever state I am, to be content.",s:"Philippians 4:11"},
+ {t:"Be strong and courageous. Do not be afraid; do not be discouraged.",s:"Joshua 1:9"},
+ {t:"A double-minded man is unstable in all his ways.",s:"James 1:8"},
+ {t:"The race is not to the swift, nor the battle to the strong.",s:"Ecclesiastes 9:11"},
+ {t:"Suffering produces perseverance; perseverance, character; and character, hope.",s:"Romans 5:3-4"},
+ {t:"Success is not final, failure is not fatal: it is the courage to continue that counts.",s:"Winston Churchill"},
+ {t:"It always seems impossible until it's done.",s:"Nelson Mandela"},
+ {t:"We are what we repeatedly do. Excellence, then, is not an act, but a habit.",s:"Will Durant"},
+ {t:"The mind is everything. What you think you become.",s:"Buddha"},
+ {t:"A river cuts through rock not because of its power but its persistence.",s:"Zen proverb"},
+ {t:"How you do anything is how you do everything.",s:"Zen proverb"},
+ {t:"Vision without action is a daydream. Action without vision is a nightmare.",s:"Japanese proverb"},
+ {t:"The bamboo that bends is stronger than the oak that resists.",s:"Japanese proverb"},
+ {t:"Even monkeys fall from trees.",s:"Japanese proverb"},
+ {t:"Your self-image is the key to your behavior.",s:"Maxwell Maltz"},
+ {t:"We are kept from our goal not by obstacles but by a clear path to a lesser goal.",s:"Robert Brault"},
+ {t:"The successful trader keeps a journal; the gambler keeps a scar.",s:"ANBU"},
+ {t:"Patience is a position.",s:"ANBU"},
+ {t:"Most days, no trade is the A+ trade.",s:"ANBU"},
+ {t:"The model is the frame; the narrative is the trade.",s:"ANBU"},
+ {t:"Bank the process; the payout follows.",s:"ANBU"},
+ {t:"The first mouse gets trapped; the second gets the cheese.",s:"ANBU"},
+ {t:"Stack the confluences; let probability do the work.",s:"ANBU"}
+];
+function dayOfYear(p){
+  const start=new Date(p.y,0,0);
+  const cur=new Date(p.y,p.mo-1,p.d);
+  return Math.floor((cur-start)/86400000);
+}
+function renderQuote(){
+  const p=nyParts();
+  const idx=dayOfYear(p)%QUOTES.length;
+  const q=QUOTES[idx];
+  $("#quoteText").textContent=q.t;
+  $("#quoteSrc").textContent="— "+q.s;
+}
+
+/* ---------- INDEXEDDB (photos) ---------- */
+let idbDB=null;
+const idbReady=new Promise(res=>{try{const r=indexedDB.open("anbu_media",1);
+  r.onupgradeneeded=()=>{r.result.createObjectStore("media");};
+  r.onsuccess=()=>{idbDB=r.result;res();}; r.onerror=()=>res();
+}catch(e){res();}});
+function idbSet(k,v){return idbReady.then(()=>new Promise(r=>{if(!idbDB)return r();try{const t=idbDB.transaction("media","readwrite");t.objectStore("media").put(v,k);t.oncomplete=r;t.onerror=r;}catch(e){r();}}));}
+function idbGet(k){return idbReady.then(()=>new Promise(r=>{if(!idbDB)return r(null);try{const q=idbDB.transaction("media").objectStore("media").get(k);q.onsuccess=()=>r(q.result||null);q.onerror=()=>r(null);}catch(e){r(null);}}));}
+function idbDel(k){return idbReady.then(()=>new Promise(r=>{if(!idbDB)return r();try{const t=idbDB.transaction("media","readwrite");t.objectStore("media").delete(k);t.oncomplete=r;t.onerror=r;}catch(e){r();}}));}
+const urlCache={};
+function objURL(k,blob){if(!urlCache[k])urlCache[k]=URL.createObjectURL(blob);return urlCache[k];}
+function mediaIdx(){return lsGet("anbu_mediaidx",{});}
+function idxAdd(k){const i=mediaIdx();i[k]=1;lsSet("anbu_mediaidx",i);}
+function idxDel(k){const i=mediaIdx();delete i[k];lsSet("anbu_mediaidx",i);}
+
+/* ---------- TABS ---------- */
+$$("#nav button").forEach(b=>b.addEventListener("click",()=>{
+  $$("#nav button").forEach(x=>x.classList.remove("on")); b.classList.add("on");
+  $$("main .tab").forEach(t=>t.classList.remove("active"));
+  $("#tab-"+b.dataset.tab).classList.add("active");
+  window.scrollTo(0,0);
+}));
+
+/* ---------- MACRO WHEEL ---------- */
+const WHEEL=[
+ {min:0,   t:"00:00", n:"Midnight — opening-price anchor"},
+ {min:120, t:"02:00", n:"4H Candle Open — tradeable anchor"},
+ {min:360, t:"06:00", n:"4H Candle Open — tradeable anchor"},
+ {min:540, t:"09:00", n:"Opening Price — important key level"},
+ {min:570, t:"09:30", n:"RTH Open — 9:30 Manipulation / Expansion"},
+ {min:590, t:"09:50", n:"9:50 Macro — 10:00 reversal may begin"},
+ {min:600, t:"10:00", n:"4H Open — 10:00 Reversal / Continuation"},
+ {min:650, t:"10:50", n:"Macro — 10:50–11:10 delivery block"},
+ {min:710, t:"11:50", n:"Macro — 11:50–12:10 backup block (Tier-2)"},
+ {min:770, t:"12:50", n:"Macro — 12:50–13:10 delivery block"},
+ {min:840, t:"14:00", n:"4H Candle Open — tradeable anchor"},
+ {min:1080,t:"18:00", n:"6:00 PM — 4H open / price anchor"},
+ {min:1320,t:"22:00", n:"4H Candle Open — tradeable anchor"}
+];
+$("#wheel").innerHTML='<div class="whl-band"></div>'+WHEEL.map((a,i)=>
+ '<div class="witem" data-wi="'+i+'"><span class="wt">'+a.t+'</span><span class="wn">'+a.n+'</span><span class="wcd"></span></div>').join("");
+const WEL=$$("#wheel .witem");
+
+function updateWheel(nowSec){
+  let ci=0,best=Infinity;
+  for(let i=0;i<WHEEL.length;i++){let diff=WHEEL[i].min*60-nowSec; if(diff<=0)diff+=86400; if(diff<best){best=diff;ci=i;}}
+  const h=Math.floor(best/3600), r=best%3600;
+  const cd=(h>0?h+":":"")+pad(Math.floor(r/60))+":"+pad(r%60);
+  for(let i=0;i<WEL.length;i++){
+    const o=i-ci, ao=Math.abs(o), el=WEL[i];
+    el.style.transform="translateY("+(o*46)+"px) rotateX("+(-o*26)+"deg) scale("+(1-Math.min(ao*.08,.24))+")";
+    el.style.opacity=o===0?1:(ao===1?.5:0);
+    el.style.zIndex=20-ao;
+    el.classList.toggle("ctr",o===0);
+    el.querySelector(".wcd").textContent=o===0?("NEXT · T-"+cd):"";
+  }
+}
+
+/* ---------- CLOCK / PROBABILITY ---------- */
+const H4=[120,360,600,840,1080,1320];
+let lastDay=todayKey();
+
+function tick(){
+  const p=nyParts();
+  if(keyOf(p.y,p.mo,p.d)!==lastDay){lastDay=keyOf(p.y,p.mo,p.d);initChecklist();renderCapToday();initCalendar(todayKey());renderQuote();}
+  $("#bigClock").textContent=pad(p.h)+":"+pad(p.m)+":"+pad(p.s);
+  $("#clockDate").textContent=p.wd+" · "+p.y+"-"+pad(p.mo)+"-"+pad(p.d)+" ET";
+
+  const min=p.h*60+p.m, mm=p.m, nowSec=min*60+p.s;
+  const kz=(mm>=50||mm<=9);
+  let macro=false; [[590,610],[650,670],[710,730],[770,790]].forEach(w=>{if(min>=w[0]-10&&min<=w[1])macro=true;});
+  let near4=false; H4.forEach(o=>{let d=Math.abs(min-o);d=Math.min(d,1440-d);if(d<=15)near4=true;});
+  const fac=[kz,macro,near4], n=fac.filter(Boolean).length;
+
+  document.body.dataset.macro=(kz||n===3)?"killzone":(n>=1?"tier2":"idle");
+
+  [["#fKz",kz],["#fMc",macro],["#f4h",near4]].forEach(([sel,on])=>{
+    const el=$(sel); el.classList.toggle("on",on);
+    el.querySelector(".st").textContent=on?"ACTIVE":"WAIT";
+  });
+  const labels=["0 of 3 timing factors active — low probability · patience",
+                "1 of 3 timing factors active — base probability",
+                "2 of 3 timing factors active — elevated probability",
+                "3 of 3 timing factors active — PEAK STACK · highest probability"];
+  const sr=$("#stackRead"); sr.textContent=labels[n]; sr.className="s"+n;
+
+  updateWheel(nowSec);
+}
+
+/* ---------- CHECKLIST (editable item list) ---------- */
+const DEF_A=[
+ "Can I articulate the NARRATIVE? (why this delivery, to this target, now — confluences + read, not shape-matching)",
+ "Isolated the HTF Draw on Liquidity — NOT just session/day highs & lows: also the 9:30 high/low, the 9:00 pre-market high/low, INTERNAL liquidity (9:30 opening price, 9:30 first presented gap/FVG, 10:00 opening price), imbalances/FVGs, opening prices & key levels — internal → quick scalp, external (highs/lows) → 10:00 hold",
+ "Identified the active daily profile (AMD) — Asian session consolidated, liquidity baseline built",
+ "Verified institutional manipulation — fast Judas leg sweeping Asian range / short-term high-low, or HTF FVG tap (via 9:30 model)",
+ "Enforced the time-and-price anchor — 9:00 · 9:30 · 9:50 · 10:00 · 4H open · 6PM · Midnight",
+ "Confirmed entry trigger on 1m/15s — inversion FVG or opening-price rejection (kill-zone / macro timing adds probability)"
+];
+const DEF_B=[
+ "Marked the HTF compass (Weekly/Monthly) + the Daily/4H delivery before the session",
+ "Checked the news calendar — NO FOMC / high-impact release today (true no-trade)",
+ "Checked calendar position — first week of month = lower probability: normal scalps, no swinging for external targets",
+ "Read the 9:30 manipulation first (narrative), did NOT trade it",
+ "Stacked confluences before entering: model + macro/kill-zone timing + A+ checklist",
+ "Targeted the RIGHT liquidity (internal = quick scalp; external = 10:00 hold)",
+ "Planned exits — scale out at target / block-end and LEAVE A RUNNER",
+ "Kept risk fixed — no over-leverage, no revenge size",
+ "Did NOT force a trade with confluences missing (no FOMO)",
+ "Stopped once the primary objective was hit — no late-session graveyard",
+ "Journaled: before / during / after photo + note (capture below)"
+];
+function loadItems(){
+  let it=lsGet("anbu_chkitems",null);
+  if(!it||!Array.isArray(it.a)||!Array.isArray(it.b)){
+    it={a:DEF_A.map((t,i)=>({id:"a"+i,t:t})),b:DEF_B.map((t,i)=>({id:"b"+i,t:t}))};
+    lsSet("anbu_chkitems",it);
+  }
+  return it;
+}
+function saveItems(it){lsSet("anbu_chkitems",it);}
+const allItems=()=>{const it=loadItems();return [...it.a,...it.b];};
+
+let editA=false, editB=false;
+let curTrade=0;
+
+/* A+ per-trade storage: array of {itemId:1} maps */
+function aplusKey(){return "anbu_aplus_"+todayKey();}
+function loadAplus(){
+  const v=lsGet(aplusKey(),null);
+  if(!v||!Array.isArray(v)||v.length===0)return [{}];
+  return v;
+}
+function saveAplus(arr){lsSet(aplusKey(),arr);}
+
+/* Daily discipline storage: {itemId:1} map */
+function dailyKey(){return "anbu_daily_"+todayKey();}
+function loadDaily(){return lsGet(dailyKey(),{});}
+function saveDaily(o){lsSet(dailyKey(),o);}
+
+function buildGroupHTML(group,items,editing){
+  if(!editing){
+    return items.map(o=>'<label class="chk"><input type="checkbox" data-id="'+o.id+'" data-grp="'+group+'"><span class="box"></span><span class="txt">'+escH(o.t)+'</span></label>').join("");
+  }
+  const mk=o=>'<div class="chk edit"><input class="etxt" data-etxt="'+o.id+'" value="'+escA(o.t)+'"><button class="trm" data-edel="'+o.id+'" title="delete">✕</button></div>';
+  const ad='<div class="addrow"><input class="inp" data-newtxt="'+group+'" placeholder="+ new item"><button class="btn" data-add="'+group+'">ADD</button></div>';
+  return items.map(mk).join("")+ad;
+}
+function buildChecklist(){
+  const it=loadItems();
+  $("#tab-checklist").classList.toggle("editing",editA);
+  $("#grpB").classList.toggle("editing",editB);
+  $("#grpA").innerHTML=buildGroupHTML("a",it.a,editA);
+  $("#grpB").innerHTML=buildGroupHTML("b",it.b,editB);
+}
+function refreshChkUI(){
+  const it=loadItems();
+  const aplus=loadAplus();
+  if(curTrade>=aplus.length)curTrade=aplus.length-1;
+  if(curTrade<0)curTrade=0;
+  const curState=aplus[curTrade]||{};
+  const daily=loadDaily();
+
+  let aCount=0; it.a.forEach(o=>{if(curState[o.id])aCount++;});
+  let bCount=0; it.b.forEach(o=>{if(daily[o.id])bCount++;});
+
+  $$(".chk input[type=checkbox][data-grp='a']").forEach(inp=>{inp.checked=!!curState[inp.dataset.id];});
+  $$(".chk input[type=checkbox][data-grp='b']").forEach(inp=>{inp.checked=!!daily[inp.dataset.id];});
+
+  $("#chkCount").textContent="A+ "+aCount+"/"+it.a.length+" · TRADE "+(curTrade+1);
+  $("#aplusTrade").textContent="TRADE "+(curTrade+1);
+
+  const done=it.b.length>0&&bCount===it.b.length;
+  $("#doneBanner").style.display=done?"block":"none";
+  const cd=lsGet("anbu_complete",{});
+  if(done&&!cd[todayKey()]){cd[todayKey()]=1;lsSet("anbu_complete",cd);}
+  if(!done&&cd[todayKey()]){delete cd[todayKey()];lsSet("anbu_complete",cd);}
+  const s=computeStreak();
+  $("#stCur").textContent=s.cur; $("#stBest").textContent=s.best;
+}
+function computeStreak(){
+  const cd=lsGet("anbu_complete",{}), p=nyParts();
+  let d=new Date(p.y,p.mo-1,p.d);
+  const k=d2=>keyOf(d2.getFullYear(),d2.getMonth()+1,d2.getDate());
+  if(!cd[k(d)])d.setDate(d.getDate()-1);
+  let cur=0; while(cd[k(d)]){cur++;d.setDate(d.getDate()-1);}
+  let best=+localStorage.getItem("anbu_best")||0;
+  if(cur>best){best=cur;try{localStorage.setItem("anbu_best",best);}catch(e){}}
+  return {cur:cur,best:best};
+}
+function initChecklist(){
+  const p=nyParts();
+  $("#chkDate").textContent="TODAY · "+p.wd.toUpperCase()+" "+pad(p.mo)+"/"+pad(p.d);
+  const aplus=loadAplus();
+  curTrade=0;  /* always open on TRADE 1 */
+  buildChecklist();
+  refreshChkUI();
+}
+
+/* Event listeners rebound to document so both #grpA (Checklist tab) and #grpB (Clock tab) work */
+document.addEventListener("change",e=>{
+  if(e.target.matches("input[type=checkbox][data-id]")){
+    const grp=e.target.dataset.grp;
+    if(grp==="a"){
+      const aplus=loadAplus();
+      if(!aplus[curTrade])aplus[curTrade]={};
+      if(e.target.checked)aplus[curTrade][e.target.dataset.id]=1;
+      else delete aplus[curTrade][e.target.dataset.id];
+      saveAplus(aplus);
+    }else{
+      const daily=loadDaily();
+      if(e.target.checked)daily[e.target.dataset.id]=1;
+      else delete daily[e.target.dataset.id];
+      saveDaily(daily);
+    }
+    refreshChkUI(); return;
+  }
+  if(e.target.matches("[data-etxt]")){
+    const it=loadItems(), all=[...it.a,...it.b];
+    const o=all.find(x=>x.id===e.target.dataset.etxt);
+    if(o){const t=e.target.value.trim(); if(t)o.t=t; saveItems(it); buildChecklist(); refreshChkUI();}
+  }
+});
+document.addEventListener("click",e=>{
+  const del=e.target.closest("[data-edel]");
+  if(del){
+    const id=del.dataset.edel, it=loadItems();
+    it.a=it.a.filter(o=>o.id!==id); it.b=it.b.filter(o=>o.id!==id);
+    saveItems(it);
+    const aplus=loadAplus(); aplus.forEach(tr=>{delete tr[id];}); saveAplus(aplus);
+    const daily=loadDaily(); delete daily[id]; saveDaily(daily);
+    buildChecklist(); refreshChkUI(); return;
+  }
+  const ad=e.target.closest("[data-add]");
+  if(ad){
+    const g=ad.dataset.add, inp=$('[data-newtxt="'+g+'"]'), t=inp.value.trim();
+    if(!t)return;
+    const it=loadItems(); it[g].push({id:"u"+Date.now(),t:t}); saveItems(it);
+    buildChecklist(); refreshChkUI();
+  }
+});
+document.addEventListener("keydown",e=>{
+  if(e.key==="Enter"&&e.target.matches("[data-newtxt]")){
+    e.preventDefault();
+    const b=$('[data-add="'+e.target.dataset.newtxt+'"]'); if(b)b.click();
+  }
+});
+
+$("#chkEdit").addEventListener("click",()=>{
+  editA=!editA;
+  $("#chkEdit").textContent=editA?"DONE":"EDIT";
+  $("#chkEdit").classList.toggle("on",editA);
+  buildChecklist(); refreshChkUI();
+});
+$("#dlyEdit").addEventListener("click",()=>{
+  editB=!editB;
+  $("#dlyEdit").textContent=editB?"DONE":"EDIT";
+  $("#dlyEdit").classList.toggle("on",editB);
+  buildChecklist(); refreshChkUI();
+});
+$("#chkReset").addEventListener("click",()=>{
+  const aplus=loadAplus();
+  aplus[curTrade]={};
+  saveAplus(aplus);
+  saveDaily({});
+  const cd=lsGet("anbu_complete",{}); delete cd[todayKey()]; lsSet("anbu_complete",cd);
+  refreshChkUI();
+});
+
+/* A+ trade navigation */
+$("#aplusPrev").addEventListener("click",()=>{
+  if(curTrade>0){curTrade--; refreshChkUI(); renderCapToday();}
+});
+$("#aplusNext").addEventListener("click",()=>{
+  const aplus=loadAplus();
+  if(curTrade<aplus.length-1){curTrade++; refreshChkUI(); renderCapToday();}
+});
+$("#aplusNew").addEventListener("click",()=>{
+  const aplus=loadAplus();
+  aplus.push({});
+  saveAplus(aplus);
+  curTrade=aplus.length-1;
+  refreshChkUI(); renderCapToday();
+});
+
+/* ---------- TRADE CAPTURE (photo + note) ---------- */
+const STAGES=[
+ {id:"before", tag:"BEFORE", ph:"improvement / note — bias, DOL, plan"},
+ {id:"during", tag:"DURING", ph:"improvement / note — setup, entry, emotion"},
+ {id:"after",  tag:"AFTER",  ph:"improvement / note — result, lesson"}
+];
+const STAGES_CAL=[
+ {id:"before", tag:"BEFORE", ph:"market before the session — e.g. the 9:30 open"},
+ {id:"during", tag:"DURING", ph:"the trade(s) you took"},
+ {id:"after",  tag:"AFTER",  ph:"market ~2h after — how the delivery finished"}
+];
+const jKey=d=>"anbu_j_"+d;
+const loadJ=d=>lsGet(jKey(d),{});
+function saveJ(d,obj){lsSet(jKey(d),obj);}
+
+/* Per-trade journal: array indexed by trade, each {before:{note},...} */
+const jtKey=d=>"anbu_jt_"+d;
+const loadJT=d=>{const v=lsGet(jtKey(d),[]); return Array.isArray(v)?v:[];};
+function saveJT(d,arr){lsSet(jtKey(d),arr);}
+
+/* Day-level capture HTML (Calendar tab) */
+function captureHTML(date,j,stages){
+  stages=stages||STAGES;
+  return stages.map(s=>{
+    const note=(j[s.id]&&j[s.id].note)||"";
+    return '<div class="cap"><div class="captag">'+s.tag+'</div>'+
+      '<button class="mbtn" data-mbtn="photo" data-stage="'+s.id+'" data-date="'+date+'">📷 PHOTO</button>'+
+      '<div class="thumbs" data-thumbs="'+date+':'+s.id+'"></div>'+
+      '<input class="capnote" data-cnote="'+s.id+'" data-date="'+date+'" placeholder="'+s.ph+'" value="'+escA(note)+'">'+
+    '</div>';
+  }).join("");
+}
+
+/* Per-trade capture HTML (Checklist tab) */
+function captureTradeHTML(date,tradeIdx,j){
+  return STAGES.map(s=>{
+    const note=(j[s.id]&&j[s.id].note)||"";
+    const thumbsKey=date+":t"+tradeIdx+":"+s.id;
+    return '<div class="cap"><div class="captag">'+s.tag+'</div>'+
+      '<button class="mbtn" data-mbtn="photo" data-stage="'+s.id+'" data-date="'+date+'" data-trade="'+tradeIdx+'">📷 PHOTO</button>'+
+      '<div class="thumbs" data-thumbs="'+thumbsKey+'"></div>'+
+      '<input class="capnote" data-cnote="'+s.id+'" data-date="'+date+'" data-trade="'+tradeIdx+'" placeholder="'+s.ph+'" value="'+escA(note)+'">'+
+    '</div>';
+  }).join("");
+}
+
+function refreshThumbs(date,stage){
+  const els=$$('[data-thumbs="'+date+':'+stage+'"]');
+  if(!els.length)return;
+  const kp=date+":"+stage+":photo";
+  idbGet(kp).then(ph=>{
+    let h="";
+    if(ph&&ph.blob)h='<span class="th"><img src="'+objURL(kp,ph.blob)+'" data-lb title="'+escA(ph.name||"photo")+'"><button data-mrm="'+kp+'">✕</button></span>';
+    els.forEach(el=>el.innerHTML=h);
+  });
+}
+function refreshThumbsAll(date){STAGES.forEach(s=>refreshThumbs(date,s.id));}
+
+function refreshThumbsTrade(date,tradeIdx,stage){
+  const tk=date+":t"+tradeIdx+":"+stage;
+  const els=$$('[data-thumbs="'+tk+'"]');
+  if(!els.length)return;
+  const kp=tk+":photo";
+  idbGet(kp).then(ph=>{
+    let h="";
+    if(ph&&ph.blob)h='<span class="th"><img src="'+objURL(kp,ph.blob)+'" data-lb title="'+escA(ph.name||"photo")+'"><button data-mrm="'+kp+'">✕</button></span>';
+    els.forEach(el=>el.innerHTML=h);
+  });
+}
+function refreshThumbsTradeAll(date,tradeIdx){STAGES.forEach(s=>refreshThumbsTrade(date,tradeIdx,s.id));}
+
+function renderCapToday(){
+  const d=todayKey();
+  const jt=loadJT(d);
+  if(!jt[curTrade])jt[curTrade]={};
+  $("#capToday").innerHTML=captureTradeHTML(d,curTrade,jt[curTrade]);
+  refreshThumbsTradeAll(d,curTrade);
+  $("#capTodayHeading").textContent="TRADE CAPTURE — TRADE "+(curTrade+1)+" · CHECK OFF, THEN UPLOAD (PHOTO + NOTE)";
+}
+
+let pending=null;
+document.addEventListener("click",e=>{
+  const mb=e.target.closest("[data-mbtn]");
+  if(mb){
+    pending={stage:mb.dataset.stage,date:mb.dataset.date};
+    if(mb.dataset.trade!==undefined)pending.trade=mb.dataset.trade;
+    $("#filePhoto").click(); return;
+  }
+  const rm=e.target.closest("[data-mrm]");
+  if(rm){
+    const k=rm.dataset.mrm;
+    idbDel(k).then(()=>{
+      if(urlCache[k]){URL.revokeObjectURL(urlCache[k]);delete urlCache[k];}
+      idxDel(k);
+      if(k.indexOf(":t")!==-1){
+        var parts=k.split(":");
+        var date=parts[0], tradeIdx=parts[1].slice(1), stage=parts[2];
+        refreshThumbsTrade(date,tradeIdx,stage);
+      }else{
+        var parts=k.split(":");
+        refreshThumbs(parts[0],parts[1]); renderCal();
+      }
+    }); return;
+  }
+  const gi=e.target.closest(".gal img,[data-lb]");
+  if(gi){openLB(gi.src,getModelText(gi)); return;}
+  const fc=e.target.closest("#calFeed [data-day]");
+  if(fc){
+    selDate=fc.dataset.day;
+    renderDetail();
+    renderCal();
+    $$("#calFeed .feedCard").forEach(c=>c.classList.toggle("sel",c.dataset.day===selDate));
+    return;
+  }
+});
+$("#filePhoto").addEventListener("change",()=>{
+  const inp=$("#filePhoto");
+  if(!inp.files||!inp.files[0]||!pending)return;
+  const file=inp.files[0];
+  let k;
+  if(pending.trade!==undefined){
+    k=pending.date+":t"+pending.trade+":"+pending.stage+":photo";
+  }else{
+    k=pending.date+":"+pending.stage+":photo";
+  }
+  idbSet(k,{blob:file,name:file.name}).then(()=>{
+    if(urlCache[k]){URL.revokeObjectURL(urlCache[k]);delete urlCache[k];}
+    idxAdd(k);
+    if(pending.trade!==undefined){
+      refreshThumbsTrade(pending.date,pending.trade,pending.stage);
+    }else{
+      refreshThumbs(pending.date,pending.stage); renderCal();
+    }
+  });
+  inp.value="";
+});
+document.addEventListener("input",e=>{
+  const n=e.target.closest("[data-cnote]");
+  if(!n)return;
+  if(n.dataset.trade!==undefined){
+    const d=n.dataset.date, ti=+n.dataset.trade;
+    const jt=loadJT(d);
+    if(!jt[ti])jt[ti]={};
+    if(!jt[ti][n.dataset.cnote])jt[ti][n.dataset.cnote]={};
+    jt[ti][n.dataset.cnote].note=n.value;
+    saveJT(d,jt);
+  }else{
+    const j=loadJ(n.dataset.date); if(!j[n.dataset.cnote])j[n.dataset.cnote]={};
+    j[n.dataset.cnote].note=n.value; saveJ(n.dataset.date,j); renderCal();
+  }
+});
+
+/* ---------- CALENDAR ---------- */
+const loadTrades=d=>lsGet("anbu_trades_"+d,[]);
+const saveTrades=(d,a)=>lsSet("anbu_trades_"+d,a);
+let selDate=todayKey(), viewY=0, viewM=0;
+let calViewMode="grid";
+
+function hasEntry(d){
+  const j=loadJ(d);
+  if(loadTrades(d).length)return true;
+  if(j&&(j.grade|0)>0)return true;
+  if(j&&Object.keys(j).length){
+    if(STAGES.some(s=>j[s.id]&&(j[s.id].note||"").trim().length))return true;
+    if((j.better||"").trim().length)return true;
+  }
+  const idx=mediaIdx();
+  return STAGES.some(s=>idx[d+":"+s.id+":photo"]);
+}
+function renderCal(){
+  const MN=["JANUARY","FEBRUARY","MARCH","APRIL","MAY","JUNE","JULY","AUGUST","SEPTEMBER","OCTOBER","NOVEMBER","DECEMBER"];
+  $("#calMonth").textContent=MN[viewM]+" "+viewY;
+  const startDay=new Date(viewY,viewM,1).getDay(), dim=new Date(viewY,viewM+1,0).getDate(), tk=todayKey();
+  let h='<div class="dn">S</div><div class="dn">M</div><div class="dn">T</div><div class="dn">W</div><div class="dn">T</div><div class="dn">F</div><div class="dn">S</div>';
+  for(let i=0;i<startDay;i++)h+='<div class="cell blank"></div>';
+  for(let d=1;d<=dim;d++){
+    const k=keyOf(viewY,viewM+1,d), tr=loadTrades(k), g=(loadJ(k).grade)|0;
+    let sum=0; tr.forEach(t=>sum+=t.pnl);
+    let c="cell"; if(k===tk)c+=" today"; if(k===selDate)c+=" sel"; if(k>tk)c+=" fut";
+    h+='<div class="'+c+'" data-day="'+k+'"><span>'+d+'</span>'+
+      (tr.length?'<span class="cs '+(sum>=0?"pos":"neg")+'">'+tr.length+'T '+fmtPnl(sum)+'</span>':"")+
+      (g?'<span class="cs st">'+"★".repeat(g)+"☆".repeat(5-g)+'</span>':"")+'</div>';
+  }
+  $("#calGrid").innerHTML=h;
+}
+function renderStars(){
+  const g=(loadJ(selDate).grade)|0;
+  $("#dayStars").innerHTML=[1,2,3,4,5].map(i=>'<button data-star="'+i+'" class="'+(i<=g?"on":"")+'">★</button>').join("");
+}
+function renderDetail(){
+  const d=selDate, tr=loadTrades(d), j=loadJ(d);
+  $("#dayTitle").textContent="DAY — "+d+(d===todayKey()?" · TODAY":"");
+  $("#capDateLbl").textContent=d;
+  let sum=0; tr.forEach(t=>sum+=t.pnl);
+  $("#tradeList").innerHTML=tr.length?tr.map((t,i)=>
+    '<div class="trow"><span class="tp '+(t.pnl>=0?"pos":"neg")+'">'+fmtPnl(t.pnl)+'</span><span class="tn">'+escH(t.note||"")+'</span><button class="trm" data-trm="'+i+'">✕</button></div>'
+  ).join(""):'<div class="tnone">No trades logged — add the day\u2019s results below (manual P&amp;L).</div>';
+  $("#tTotal").textContent=tr.length?("TOTAL "+fmtPnl(sum)+" · "+tr.length+" TRADE"+(tr.length>1?"S":"")):"";
+  renderStars();
+  $("#calCapture").innerHTML=captureHTML(d,j,STAGES_CAL);
+  refreshThumbsAll(d);
+  $("#jBetter").value=j.better||"";
+}
+function initCalendar(d){
+  selDate=d;
+  const dt=new Date(+d.slice(0,4),+d.slice(5,7)-1,+d.slice(8,10));
+  viewY=dt.getFullYear(); viewM=dt.getMonth();
+  renderCal(); renderDetail();
+}
+
+/* ---------- CALENDAR FEED ---------- */
+function renderFeed(){
+  const dim=new Date(viewY,viewM+1,0).getDate();
+  const tk=todayKey();
+  const idx=mediaIdx();
+  let html="";
+  for(let d=dim;d>=1;d--){
+    const k=keyOf(viewY,viewM+1,d);
+    if(!hasEntry(k))continue;
+    const tr=loadTrades(k);
+    let sum=0; tr.forEach(t=>sum+=t.pnl);
+    const j=loadJ(k);
+    const g=(j.grade)|0;
+    const better=(j.better||"").trim();
+    const stars=g?"★".repeat(g)+"☆".repeat(5-g):"";
+    const selClass=k===selDate?" sel":"";
+    html+='<div class="feedCard'+selClass+'" data-day="'+k+'">'+
+      '<div class="fcTop">'+
+        '<span class="fcDate">'+k+(k===tk?" · TODAY":"")+'</span>'+
+        (stars?'<span class="fcStars">'+stars+'</span>':'')+
+      '</div>'+
+      (tr.length?'<div class="fcPnl '+(sum>=0?"pos":"neg")+'">'+fmtPnl(sum)+' <span class="fcTcount">· '+tr.length+' trade'+(tr.length>1?"s":"")+'</span></div>':'<div class="fcPnl fcNone">no trades logged</div>')+
+      (better?'<div class="fcBetter">"'+escH(better)+'"</div>':'')+
+      '<div class="fcThumbs" data-fcthumbs="'+k+'"></div>'+
+    '</div>';
+  }
+  if(!html)html='<div class="tnone" style="text-align:center;padding:20px">No entries this month yet. Log trades (photos · P&amp;L · stars) and FEED becomes your visual trading diary — one card per day with your before / during / after shots.</div>';
+  $("#calFeed").innerHTML=html;
+  $$("[data-fcthumbs]").forEach(el=>{
+    const date=el.dataset.fcthumbs;
+    const keys=STAGES_CAL.filter(s=>idx[date+":"+s.id+":photo"]).map(s=>date+":"+s.id+":photo");
+    if(!keys.length)return;
+    Promise.all(keys.map(kp=>idbGet(kp).then(ph=>({kp,ph}))))
+      .then(results=>{
+        let th="";
+        results.forEach(({kp,ph})=>{
+          if(ph&&ph.blob){
+            th+='<img src="'+objURL(kp,ph.blob)+'" data-lb>';
+          }
+        });
+        el.innerHTML=th;
+      });
+  });
+}
+function setCalView(mode){
+  calViewMode=mode;
+  $$("#calView button").forEach(b=>b.classList.toggle("on",b.dataset.view===mode));
+  /* calendar stays visible in BOTH views so you can jump to a day from the feed */
+  $(".calwrap").style.display="";
+  $("#calFeed").style.display=mode==="feed"?"block":"none";
+  if(mode==="feed")renderFeed();
+}
+$("#calView").addEventListener("click",e=>{
+  const b=e.target.closest("[data-view]");
+  if(b)setCalView(b.dataset.view);
+});
+
+$("#tAdd").addEventListener("click",()=>{
+  const v=parseFloat($("#tPnl").value); if(isNaN(v))return;
+  const tr=loadTrades(selDate); tr.push({pnl:v,note:$("#tNote").value.trim()});
+  saveTrades(selDate,tr); $("#tPnl").value=""; $("#tNote").value="";
+  renderDetail(); renderCal();
+});
+$("#tNote").addEventListener("keydown",e=>{if(e.key==="Enter")$("#tAdd").click();});
+$("#tradeList").addEventListener("click",e=>{
+  const b=e.target.closest("[data-trm]"); if(!b)return;
+  const tr=loadTrades(selDate); tr.splice(+b.dataset.trm,1);
+  saveTrades(selDate,tr); renderDetail(); renderCal();
+});
+$("#dayStars").addEventListener("click",e=>{
+  const b=e.target.closest("[data-star]"); if(!b)return;
+  const v=+b.dataset.star, j=loadJ(selDate);
+  j.grade=((j.grade|0)===v)?0:v;
+  saveJ(selDate,j); renderStars(); renderCal();
+});
+$("#jBetter").addEventListener("input",()=>{const j=loadJ(selDate); j.better=$("#jBetter").value; saveJ(selDate,j); renderCal();});
+$("#calGrid").addEventListener("click",e=>{
+  const c=e.target.closest("[data-day]"); if(!c)return;
+  selDate=c.dataset.day; renderCal(); renderDetail();
+  /* in FEED view, jump the feed to that day's card */
+  if(calViewMode==="feed"){
+    $$("#calFeed .feedCard").forEach(fc=>fc.classList.toggle("sel",fc.dataset.day===selDate));
+    const card=document.querySelector('#calFeed .feedCard[data-day="'+selDate+'"]');
+    if(card)card.scrollIntoView({block:"start",behavior:"smooth"});
+  }
+});
+$("#calPrev").addEventListener("click",()=>{viewM--; if(viewM<0){viewM=11;viewY--;} renderCal(); if(calViewMode==="feed")renderFeed();});
+$("#calNext").addEventListener("click",()=>{viewM++; if(viewM>11){viewM=0;viewY++;} renderCal(); if(calViewMode==="feed")renderFeed();});
+
+/* ---------- SECTION EDIT (Change C) ---------- */
+document.addEventListener("click",e=>{
+  const seb=e.target.closest(".secEdit");
+  if(seb){
+    e.stopPropagation();
+    e.preventDefault();
+    const details=seb.closest("details");
+    const body=details.querySelector(".body");
+    if(!body)return;
+    const editing=body.getAttribute("contenteditable")==="true";
+    if(editing){
+      body.setAttribute("contenteditable","false");
+      body.classList.remove("sec-editing");
+      seb.textContent="✎";
+      seb.classList.remove("on");
+      lsSet("anbu_sec_"+seb.dataset.secid, body.innerHTML);
+    }else{
+      body.setAttribute("contenteditable","true");
+      body.classList.add("sec-editing");
+      seb.textContent="✓";
+      seb.classList.add("on");
+      body.focus();
+    }
+  }
+},true);
+function loadSecOverrides(){
+  $$("details[data-secid]").forEach(d=>{
+    const saved=lsGet("anbu_sec_"+d.dataset.secid,null);
+    if(saved){
+      const body=d.querySelector(".body");
+      if(body)body.innerHTML=saved;
+    }
+  });
+}
+
+/* ---------- LIGHTBOX — Instagram-style + zoom (Changes A & B) ---------- */
+const lb={s:1,x:0,y:0,minS:1,maxS:6};
+let lbPtrs=new Map();
+let lbPinchD0=0, lbPinchS0=1;
+let lbDrag=false, lbSX=0, lbSY=0, lbMoved=false;
+
+function lbApply(){
+  $("#lbImg").style.transform="translate("+lb.x+"px,"+lb.y+"px) scale("+lb.s+")";
+}
+function lbClamp(){ lb.s=Math.min(lb.maxS,Math.max(lb.minS,lb.s)); }
+function lbZoomAt(fx,fy,newS){
+  const pane=$("#lbImgPane");
+  const pw=pane.clientWidth, ph=pane.clientHeight;
+  const cx=fx-pw/2, cy=fy-ph/2;
+  const dx=(cx-lb.x)/lb.s, dy=(cy-lb.y)/lb.s;
+  lb.s=newS; lbClamp();
+  lb.x=cx-lb.s*dx; lb.y=cy-lb.s*dy;
+  lbApply();
+}
+function getModelText(img){
+  const model=img.closest(".model");
+  if(!model)return "";
+  let html="";
+  const h4=model.querySelector("h4");
+  if(h4){
+    const cl=h4.cloneNode(true);
+    const b=cl.querySelector(".badge"); if(b)b.remove();
+    html+="<h3>"+cl.textContent.trim()+"</h3>";
+  }
+  const desc=model.querySelector(".desc");
+  if(desc)html+="<p>"+desc.innerHTML+"</p>";
+  const meta=model.querySelector(".meta");
+  if(meta)html+="<div class='lb-meta'>"+meta.innerHTML+"</div>";
+  return html;
+}
+function openLB(src,textHTML){
+  lb.s=1;lb.x=0;lb.y=0;
+  lbPtrs.clear(); lbPinchD0=0; lbDrag=false; lbMoved=false;
+  $("#lbImg").classList.remove("dragging");
+  lbApply();
+  $("#lbImg").src=src;
+  $("#lbText").innerHTML=textHTML||"";
+  $("#lbIG").classList.add("on");
+}
+function closeLB(){
+  $("#lbIG").classList.remove("on");
+  $("#lbImg").src="";
+  $("#lbText").innerHTML="";
+}
+$("#lbX").addEventListener("click",closeLB);
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeLB();});
+$("#lbIG").addEventListener("click",e=>{
+  if(e.target.id==="lbIG"||(e.target.id==="lbImgPane"&&!lbMoved))closeLB();
+});
+$("#lbImgPane").addEventListener("wheel",e=>{
+  e.preventDefault();
+  const r=$("#lbImgPane").getBoundingClientRect();
+  lbZoomAt(e.clientX-r.left,e.clientY-r.top, lb.s*(e.deltaY<0?1.15:0.87));
+},{passive:false});
+$("#zIn").addEventListener("click",e=>{
+  e.stopPropagation();
+  const p=$("#lbImgPane");
+  lbZoomAt(p.clientWidth/2,p.clientHeight/2,lb.s*1.4);
+});
+$("#zOut").addEventListener("click",e=>{
+  e.stopPropagation();
+  const p=$("#lbImgPane");
+  lbZoomAt(p.clientWidth/2,p.clientHeight/2,lb.s/1.4);
+});
+$("#zReset").addEventListener("click",e=>{
+  e.stopPropagation();
+  lb.s=1;lb.x=0;lb.y=0;lbApply();
+});
+$("#lbImgPane").addEventListener("pointerdown",e=>{
+  if(e.target.closest("button"))return;
+  lbPtrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(lbPtrs.size===1){
+    lbDrag=true; lbMoved=false;
+    lbSX=e.clientX-lb.x; lbSY=e.clientY-lb.y;
+    $("#lbImg").classList.add("dragging");
+  }else if(lbPtrs.size===2){
+    lbDrag=false;
+    const pts=[...lbPtrs.values()];
+    lbPinchD0=Math.hypot(pts[0].x-pts[1].x,pts[0].y-pts[1].y);
+    lbPinchS0=lb.s;
+  }
+  try{$("#lbImgPane").setPointerCapture(e.pointerId);}catch(_){}
+});
+$("#lbImgPane").addEventListener("pointermove",e=>{
+  if(!lbPtrs.has(e.pointerId))return;
+  lbPtrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(lbPtrs.size===2){
+    const pts=[...lbPtrs.values()];
+    const d=Math.hypot(pts[0].x-pts[1].x,pts[0].y-pts[1].y);
+    if(lbPinchD0>0){
+      const r=$("#lbImgPane").getBoundingClientRect();
+      const mx=(pts[0].x+pts[1].x)/2-r.left;
+      const my=(pts[0].y+pts[1].y)/2-r.top;
+      lbZoomAt(mx,my,lbPinchS0*(d/lbPinchD0));
+    }
+  }else if(lbDrag){
+    const nx=e.clientX-lbSX, ny=e.clientY-lbSY;
+    if(Math.abs(nx-lb.x)+Math.abs(ny-lb.y)>4)lbMoved=true;
+    lb.x=nx; lb.y=ny; lbApply();
+  }
+});
+function lbPtrUp(e){
+  if(!lbPtrs.has(e.pointerId))return;
+  lbPtrs.delete(e.pointerId);
+  if(lbPtrs.size<2)lbPinchD0=0;
+  if(lbPtrs.size===0){
+    lbDrag=false;
+    $("#lbImg").classList.remove("dragging");
+    setTimeout(()=>lbMoved=false,50);
+  }else if(lbPtrs.size===1){
+    const pt=[...lbPtrs.values()][0];
+    lbDrag=true; lbSX=pt.x-lb.x; lbSY=pt.y-lb.y;
+  }
+}
+$("#lbImgPane").addEventListener("pointerup",lbPtrUp);
+$("#lbImgPane").addEventListener("pointercancel",lbPtrUp);
+$("#lbImgPane").addEventListener("dblclick",e=>{
+  if(e.target.closest("button"))return;
+  e.preventDefault();
+  const r=$("#lbImgPane").getBoundingClientRect();
+  if(lb.s>1.5){ lb.s=1;lb.x=0;lb.y=0; }
+  else { lbZoomAt(e.clientX-r.left,e.clientY-r.top,2.5); }
+  lbApply();
+});
+
+/* ---------- INIT ---------- */
+document.addEventListener("DOMContentLoaded",()=>{
+  loadSecOverrides();
+  renderQuote();
+  initChecklist();
+  renderCapToday();
+  initCalendar(todayKey());
+  tick();
+  setInterval(tick,1000);
+});
+})();
+</script>
+</body>
+</html>
