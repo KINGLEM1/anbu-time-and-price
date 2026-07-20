@@ -1,0 +1,9 @@
+{
+  "name": "ANBU — Time & Price",
+  "short_name": "ANBU",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0a0708",
+  "theme_color": "#0a0708",
+  "icons": [{ "src": "images/favicon.png", "sizes": "any", "type": "image/png" }]
+}

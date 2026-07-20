@@ -6,6 +6,9 @@
 <title>ANBU — Time &amp; Price</title>
 <link rel="icon" type="image/png" href="images/favicon.png">
 <link rel="apple-touch-icon" href="images/favicon.png">
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0a0708">
 <meta property="og:type" content="website">
 <meta property="og:title" content="ANBU — Time &amp; Price">
@@ -43,6 +46,11 @@ body[data-macro="killzone"] .sharingan-wrap .spin{animation:spin 6s linear infin
 @keyframes ignitePulse{0%,100%{filter:drop-shadow(0 0 20px var(--glow)) drop-shadow(0 0 60px rgba(224,18,43,.3))}50%{filter:drop-shadow(0 0 40px var(--glow)) drop-shadow(0 0 100px rgba(224,18,43,.5))}}
 @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){.sharingan-wrap .spin,body[data-macro="killzone"] .sharingan-wrap{animation:none!important}}
+body.widgetmode header.top,body.widgetmode #nav,body.widgetmode #quoteCard{display:none!important}
+body.widgetmode #tab-clock>*{display:none!important}
+body.widgetmode #tab-clock .clockwrap,body.widgetmode #tab-clock #stackCard{display:block!important}
+body.widgetmode{padding:6px 10px!important}
+body.widgetmode #bigClock{font-size:clamp(44px,11vw,64px)}
 header.top h1 #userTag{font-size:.55em;color:var(--crimson);cursor:pointer;letter-spacing:1.5px;text-shadow:0 0 10px var(--glow)}
 .wrap{max-width:var(--w);margin:0 auto;position:relative;z-index:1}
 header.top{display:flex;align-items:center;gap:10px;padding:14px 2px 8px;flex-wrap:wrap}
@@ -247,8 +255,8 @@ details .body i{color:var(--text-3)}
 .cardbtns{display:flex;gap:8px}
 #cardSave,#cardX{background:rgba(0,0,0,.7);border:1px solid rgba(224,18,43,.5);color:#fff;border-radius:8px;font-family:var(--mono);font-size:12px;padding:8px 12px;cursor:pointer}
 #cardSave{border-color:var(--crimson);background:rgba(224,18,43,.2)}
-.cardscroll{flex:1;overflow:auto;display:flex;justify-content:center;padding:16px}
-#cardImg{max-width:100%;height:auto;align-self:flex-start;border:1px solid var(--line);border-radius:8px}
+.cardscroll{flex:1;overflow:auto;display:flex;justify-content:center;align-items:center;padding:16px}
+#cardImg{max-width:100%;max-height:calc(100vh - 150px);width:auto;height:auto;object-fit:contain;border:1px solid var(--line);border-radius:8px}
 #cardHint{font-family:var(--sans);font-size:11px;color:var(--text-3);text-align:center;padding:8px 16px 14px;flex-shrink:0}
 .mkcard{width:100%;margin-top:2px;font-size:11px;opacity:.92}
 #nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:var(--w);display:grid;grid-template-columns:repeat(4,1fr);background:rgba(10,7,8,.94);border-top:1px solid var(--line);backdrop-filter:blur(10px);padding-bottom:env(safe-area-inset-bottom);z-index:50}
@@ -311,7 +319,7 @@ details .body i{color:var(--text-3)}
     <div id="clockDate">—</div>
   </div>
 
-  <div class="card">
+  <div class="card" id="stackCard">
     <div class="ct">PROBABILITY STACK</div>
     <div id="stackRead" class="s0">— timing factors —</div>
     <div class="frow">
@@ -822,11 +830,17 @@ function idxDel(k){const i=mediaIdx();delete i[k];lsSet("anbu_mediaidx",i);}
 
 /* ---------- TABS ---------- */
 $$("#nav button").forEach(b=>b.addEventListener("click",()=>{
+  try{localStorage.setItem("anbu_tab",b.dataset.tab)}catch(e){}
   $$("#nav button").forEach(x=>x.classList.remove("on")); b.classList.add("on");
   $$("main .tab").forEach(t=>t.classList.remove("active"));
   $("#tab-"+b.dataset.tab).classList.add("active");
   window.scrollTo(0,0);
 }));
+/* restore last tab on refresh (skipped in widget mode) */
+(function(){if(document.body.classList.contains("widgetmode"))return;
+  try{const t=localStorage.getItem("anbu_tab");
+    if(t&&t!=="clock"){const b=document.querySelector('#nav button[data-tab="'+t+'"]');if(b)b.click();window.scrollTo(0,0);}
+  }catch(e){}})();
 
 /* ---------- MACRO WHEEL ---------- */
 const WHEEL=[
@@ -1586,21 +1600,24 @@ async function buildTradeCard(date,ti){
   }
   const better=((loadJ(date).better)||"").trim();
   if(!items.length&&!better){alert("Nothing to combine yet — add a screenshot or a note to this trade first.");return;}
-  const W=1080, pad=44, imgW=W-2*pad, gap=30;
+  const N=items.length||1, pad=50, gap=28;
+  const W = N<=1?1080 : N===2?1500 : N===3?1860 : 2200;
+  const colW = Math.floor((W-2*pad-(N-1)*gap)/Math.max(N,1));
+  const imgW = W-2*pad;
   const F_SERIF="'Georgia',serif", F_SANS="system-ui,-apple-system,'Segoe UI',Arial,sans-serif";
   const m=document.createElement("canvas").getContext("2d");
-  // measure
-  let H=pad+58/*title*/+30/*creed*/+26;
-  const blocks=items.map(it=>{
-    let bh=34; let noteLines=[];
-    if(it.note){m.font="24px "+F_SANS;noteLines=wrapLines(m,it.note,imgW);bh+=noteLines.length*32+10;}
-    let imgH=0; if(it.img){imgH=Math.round(it.img.naturalHeight*imgW/it.img.naturalWidth);bh+=imgH+10;}
-    return {it,noteLines,imgH,bh:bh+gap};
+  /* measure columns */
+  const cols = items.map(it=>{
+    let ch=36, noteLines=[], imgH=0;
+    if(it.img) imgH=Math.round(it.img.naturalHeight*colW/it.img.naturalWidth);
+    if(it.note){m.font="20px "+F_SANS; noteLines=wrapLines(m,it.note,colW); }
+    ch += imgH + (imgH?10:0) + noteLines.length*27 + 6;
+    return {it,noteLines,imgH,ch};
   });
-  H+=blocks.reduce((s,b)=>s+b.bh,0);
-  let footerLines=[]; if(better){m.font="24px "+F_SANS;footerLines=wrapLines(m,better,imgW);H+=38+footerLines.length*32;}
-  H+=pad;
-  // draw
+  const rowH = cols.length ? Math.max(...cols.map(c=>c.ch)) : 0;
+  let footerLines=[]; if(better){m.font="24px "+F_SANS; footerLines=wrapLines(m,better,imgW);}
+  let H = pad + 52 + 44 + rowH + (footerLines.length? 26+38+footerLines.length*32 : 0) + pad;
+  /* draw */
   const cv=document.createElement("canvas");cv.width=W;cv.height=H;const x=cv.getContext("2d");
   x.fillStyle="#0a0708";x.fillRect(0,0,W,H);
   const rg=x.createRadialGradient(W/2,120,60,W/2,120,W*0.9);
@@ -1619,15 +1636,22 @@ async function buildTradeCard(date,ti){
   x.textAlign="left"; y+=52;
   x.fillStyle="#c83e3e";x.font="italic 22px "+F_SERIF;
   x.fillText("TRADE "+(ti+1)+" · "+date,pad,y); y+=44;
-  blocks.forEach(b=>{
-    x.fillStyle="#e0122b";x.font="bold 20px "+F_SERIF;
-    x.fillText(b.it.label,pad,y); y+=32;
-    if(b.noteLines.length){x.fillStyle="#e8ddd6";x.font="24px "+F_SANS;b.noteLines.forEach(l=>{x.fillText(l,pad,y);y+=32;});y+=10;}
-    if(b.it.img){x.drawImage(b.it.img,pad,y,imgW,b.imgH);x.strokeStyle="rgba(224,18,43,0.35)";x.lineWidth=1.5;x.strokeRect(pad,y,imgW,b.imgH);y+=b.imgH+10;}
-    y+=gap;
+  /* one row: every stage side by side, its note directly under its image */
+  cols.forEach((c,i2)=>{
+    const cx=pad+i2*(colW+gap); let cy=y;
+    x.fillStyle="#e0122b";x.font="bold 22px "+F_SERIF;
+    x.fillText(c.it.label,cx,cy); cy+=36;
+    if(c.it.img){
+      x.drawImage(c.it.img,cx,cy,colW,c.imgH);
+      x.strokeStyle="rgba(224,18,43,0.35)";x.lineWidth=1.5;x.strokeRect(cx,cy,colW,c.imgH);
+      cy+=c.imgH+10;
+    }
+    if(c.noteLines.length){x.fillStyle="#e8ddd6";x.font="20px "+F_SANS;c.noteLines.forEach(l=>{x.fillText(l,cx,cy);cy+=27;});}
   });
+  y+=rowH;
   if(footerLines.length){
-    x.fillStyle="#e0122b";x.font="bold 20px "+F_SERIF;x.fillText("WHAT I COULD HAVE DONE BETTER",pad,y);y+=36;
+    y+=26;
+    x.fillStyle="#e0122b";x.font="bold 22px "+F_SERIF;x.fillText("WHAT I COULD HAVE DONE BETTER",pad,y);y+=38;
     x.fillStyle="#e8ddd6";x.font="24px "+F_SANS;footerLines.forEach(l=>{x.fillText(l,pad,y);y+=32;});
   }
   cv.toBlob(blob=>{
@@ -1639,6 +1663,7 @@ async function buildTradeCard(date,ti){
     $("#cardModal").classList.add("on");
   },"image/png");
 }
+if(location.search.indexOf("widget")>-1)document.body.classList.add("widgetmode");
 function getUser(){try{return (localStorage.getItem("anbu_user")||"KING LEM").trim()||"KING LEM"}catch(e){return "KING LEM"}}
 function renderUserTag(){const el=document.getElementById("userTag");if(el)el.textContent="("+getUser()+")";}
 (function(){const el=document.getElementById("userTag");if(!el)return;
