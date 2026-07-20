@@ -1728,6 +1728,20 @@ function renderUserTag(){const el=document.getElementById("userTag");if(el)el.te
   el.addEventListener("click",()=>{const v=prompt("Name shown on the header & your trade cards:",getUser());
     if(v!==null){try{localStorage.setItem("anbu_user",v.trim()||"KING LEM")}catch(e){}renderUserTag();}});
   renderUserTag();})();
+/* ---- day rollover watcher: when the NY trading day changes (midnight or a system
+   clock change), re-read every "today"-keyed view so the checklist starts fresh
+   automatically. Old days stay saved under their own dates. ---- */
+let _lastDay=todayKey();
+setInterval(()=>{
+  const nk=todayKey();
+  if(nk===_lastDay)return;
+  _lastDay=nk; curTrade=0;
+  try{initChecklist();}catch(e){}
+  try{if(typeof renderCapToday==="function")renderCapToday();}catch(e){}
+  try{if(typeof renderAplusStars==="function")renderAplusStars();}catch(e){}
+  try{renderCal();}catch(e){}
+  try{if(selDate===_lastDay)initCalendar(nk);}catch(e){}
+},15000);
 let cardURL="", cardName="anbu-card.png";
 let cardCtx={date:null,ti:0,n:1};
 async function cardNav(dir){
