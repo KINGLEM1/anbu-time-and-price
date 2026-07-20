@@ -344,9 +344,15 @@ details .body i{color:var(--text-3)}
 
 <!-- TAB 1 : CLOCK -->
 <section id="tab-clock" class="tab active">
+  <div class="clockwrap">
+    <div class="clocklabel" data-i18n="clockLabel">NEW YORK · ET</div>
+    <div id="bigClock">--:--:--</div>
+    <div id="clockDate">—</div>
+  </div>
+
   <div class="card" id="quoteCard">
     <div class="qlbl" data-i18n="quoteLabel">QUOTE OF THE DAY</div>
-    <div id="quoteText">—</div>
+    <div id="quoteText" data-noi18n>—</div>
     <div id="quoteSrc">—</div>
     <button id="quoteShare" type="button">SHARE</button>
   </div>
@@ -354,22 +360,16 @@ details .body i{color:var(--text-3)}
   <div class="card" id="bookCard">
     <div class="qlbl">BOOK OF THE WEEK</div>
     <button id="bookShare" type="button">SHARE</button>
-    <div id="bookTitle">—</div>
-    <div id="bookAuthor">—</div>
-    <div id="bookProv">—</div>
-    <div class="bklbl" id="bookThesisLbl">CORE THESIS</div>
-    <div id="bookThesis">—</div>
-    <div class="bklbl" id="bookAppliedLbl">APPLIED TO TRADING</div>
-    <div id="bookApplied"></div>
-    <div id="bookLine">—</div>
+    <div id="bookTitle" data-noi18n>—</div>
+    <div id="bookAuthor" data-noi18n>—</div>
+    <div id="bookProv" data-noi18n>—</div>
+    <div class="bklbl" id="bookThesisLbl" data-noi18n>CORE THESIS</div>
+    <div id="bookThesis" data-noi18n>—</div>
+    <div class="bklbl" id="bookAppliedLbl" data-noi18n>APPLIED TO TRADING</div>
+    <div id="bookApplied" data-noi18n></div>
+    <div id="bookLine" data-noi18n>—</div>
   </div>
 
-
-  <div class="clockwrap">
-    <div class="clocklabel" data-i18n="clockLabel">NEW YORK · ET</div>
-    <div id="bigClock">--:--:--</div>
-    <div id="clockDate">—</div>
-  </div>
 
   <div class="card" id="stackCard">
     <div class="ct" data-i18n="probStack">PROBABILITY STACK</div>
@@ -734,7 +734,7 @@ const TL={
  "NEW YORK · ET":{es:"NUEVA YORK · ET",zh:"纽约 · ET",fr:"NEW YORK · ET",ar:"نيويورك · التوقيت الشرقي"},
  "PROBABILITY STACK":{es:"PILA DE PROBABILIDAD",zh:"概率叠加",fr:"PILE DE PROBABILITÉ",ar:"عوامل الاحتمالية"},
  "MACRO WHEEL — TIME ANCHORS":{es:"RUEDA MACRO — ANCLAS DE TIEMPO",zh:"宏观时轮 — 时间锚点",fr:"ROUE MACRO — ANCRAGES TEMPORELS",ar:"عجلة الماكرو — مراسي الوقت"},
- "Kill Zone":{es:"Zona Kill",zh:"关键时段",fr:"Kill Zone",ar:"Kill Zone"},
+ "Kill Zone":{es:"Zona Kill",zh:"关键时段",fr:"Kill Zone",ar:"منطقة القنص"},
  "Macro Window":{es:"Ventana Macro",zh:"宏观窗口",fr:"Fenêtre Macro",ar:"نافذة الماكرو"},
  "4H Candle Open":{es:"Apertura Vela 4H",zh:"4小时K线开盘",fr:"Ouverture Bougie 4H",ar:"افتتاح شمعة 4 ساعات"},
  "WAIT":{es:"ESPERA",zh:"等待",fr:"ATTENTE",ar:"انتظر"},
@@ -1005,6 +1005,8 @@ function rerenderLang(){
   try{typeof refreshChkUI==="function"&&refreshChkUI();}catch(e){}
   try{typeof renderCapToday==="function"&&renderCapToday();}catch(e){}
   try{typeof calViewMode!=="undefined"&&calViewMode==="feed"&&typeof renderFeed==="function"&&renderFeed();}catch(e){}
+  try{typeof renderQuote==="function"&&renderQuote();}catch(e){}
+  try{typeof renderBook==="function"&&renderBook();}catch(e){}
 }
 function setLang(l){curLang=l;try{localStorage.setItem("anbu_lang",l);}catch(e){}document.documentElement.setAttribute("lang",l==="zh"?"zh-Hans":l);rerenderLang();applyLang();updateLangBtns();}
 /* auto-translate dynamically-rendered content (calendar journal, cards, status lines, etc.) */
