@@ -283,6 +283,20 @@ details .body i{color:var(--text-3)}
 #quoteCard{margin:10px 0}
 #quoteCard .qlbl{font-family:var(--serif);font-size:10px;letter-spacing:2px;color:var(--text-3);margin-bottom:6px}
 #quoteText{font-family:var(--serif);font-style:italic;font-size:14.5px;line-height:1.55;color:var(--text);margin-bottom:6px}
+#bookCard{position:relative}
+#bookShare{position:absolute;top:9px;right:10px;font-family:var(--serif);font-size:10.5px;letter-spacing:1.5px;color:var(--crimson);background:rgba(224,18,43,.07);border:1px solid rgba(224,18,43,.35);border-radius:7px;padding:5px 10px;cursor:pointer;transition:background .2s,box-shadow .2s}
+#bookShare::before{content:"\25C8 ";opacity:.85}
+#bookShare:hover{background:rgba(224,18,43,.16);box-shadow:0 0 12px rgba(224,18,43,.25)}
+#bookTitle{font-family:var(--serif);font-weight:700;font-size:19px;color:var(--text);margin-top:2px;line-height:1.3}
+#bookAuthor{font-family:var(--serif);font-style:italic;font-size:13px;color:var(--crimson);margin-top:3px}
+#bookProv{font-size:10.5px;color:var(--text-2);margin-top:6px;letter-spacing:.3px}
+.bklbl{font-size:10px;letter-spacing:2px;color:#e8a020;margin-top:14px;margin-bottom:5px}
+#bookThesis{font-size:13px;line-height:1.6;color:var(--text)}
+.bkap{font-size:12.5px;line-height:1.55;color:var(--text);margin-bottom:7px;padding-left:14px;position:relative}
+.bkap::before{content:"";position:absolute;left:0;top:7px;width:5px;height:5px;border-radius:50%;background:var(--crimson)}
+.bkk{color:var(--crimson);font-weight:600}
+#bookLine{font-family:var(--serif);font-style:italic;font-size:13px;line-height:1.55;color:var(--text);border-left:3px solid var(--crimson);padding-left:11px;margin-top:13px}
+@media(max-width:420px){#bookShare{font-size:9.5px;padding:4px 8px;top:7px;right:8px}#bookTitle{font-size:17px}}
 #quoteCard{position:relative}
 #quoteShare{position:absolute;top:9px;right:10px;font-family:var(--serif);font-size:10.5px;letter-spacing:1.5px;color:var(--crimson);background:rgba(224,18,43,.07);border:1px solid rgba(224,18,43,.35);border-radius:7px;padding:5px 10px;cursor:pointer;transition:background .2s,box-shadow .2s}
 #quoteShare::before{content:"\25C8 ";opacity:.85}
@@ -336,6 +350,20 @@ details .body i{color:var(--text-3)}
     <div id="quoteSrc">—</div>
     <button id="quoteShare" type="button">SHARE</button>
   </div>
+
+  <div class="card" id="bookCard">
+    <div class="qlbl">BOOK OF THE WEEK</div>
+    <button id="bookShare" type="button">SHARE</button>
+    <div id="bookTitle">—</div>
+    <div id="bookAuthor">—</div>
+    <div id="bookProv">—</div>
+    <div class="bklbl" id="bookThesisLbl">CORE THESIS</div>
+    <div id="bookThesis">—</div>
+    <div class="bklbl" id="bookAppliedLbl">APPLIED TO TRADING</div>
+    <div id="bookApplied"></div>
+    <div id="bookLine">—</div>
+  </div>
+
 
   <div class="clockwrap">
     <div class="clocklabel" data-i18n="clockLabel">NEW YORK · ET</div>
@@ -939,6 +967,12 @@ const TL={
 "Stack the confluences; let probability do the work.":{es:"Apila las confluencias; deja que la probabilidad haga el trabajo.",zh:"叠加汇合点，让概率替你做事。",fr:"Empile les confluences ; laisse la probabilité faire le travail.",ar:"كدّس التوافقات، ودع الاحتمالية تقوم بالعمل."}
 ,
 "SHARE":{es:"COMPARTIR",zh:"分享",fr:"PARTAGER",ar:"مشاركة"}
+,
+"BOOK OF THE WEEK":{es:"LIBRO DE LA SEMANA",zh:"本周书籍",fr:"LIVRE DE LA SEMAINE",ar:"كتاب الأسبوع"},
+"Distilled from":{es:"Destilado de",zh:"提炼自",fr:"Distillé de",ar:"مُستخلص من"},
+"principle-note reference":{es:"referencia de notas de principios",zh:"原则笔记参考",fr:"référence de notes de principes",ar:"مرجع ملاحظات المبادئ"},
+"CORE THESIS":{es:"TESIS CENTRAL",zh:"核心论点",fr:"THÈSE CENTRALE",ar:"الأطروحة الأساسية"},
+"APPLIED TO TRADING":{es:"APLICADO AL TRADING",zh:"应用于交易",fr:"APPLIQUÉ AU TRADING",ar:"مطبَّق على التداول"}
 };
 function _loc(){return {en:"en-US",es:"es-ES",zh:"zh-CN",fr:"fr-FR",ar:"ar"}[curLang]||"en-US";}
 let curLang=(function(){try{return localStorage.getItem("anbu_lang")||"en";}catch(e){return "en";}})();
@@ -1127,6 +1161,49 @@ function dayOfYear(p){
   const cur=new Date(p.y,p.mo-1,p.d);
   return Math.floor((cur-start)/86400000);
 }
+/* ===== BOOK OF THE WEEK =====
+   27 distilled notes from the mindset library. Rotates weekly (week boundary = Monday,
+   NY time) so it is a weekly ritual rather than another daily thing to digest.
+   BOOK_TL holds per-language overrides; English lives in BOOKS. ===== */
+const BOOKS=[{"ti":"Attitude Is Everything","au":"Jeff Keller","pg":125,"th":"Your financial results are fundamentally determined by your mental posture. A trader's success is built not on predicting markets, but on managing their own mindset, which shapes every decision and reaction.","ap":[{"k":"Patience","v":"Your \"window\" determines if you see a missed trade as a loss or an exercise in discipline."},{"k":"Emotional Control","v":"Using disciplined language (\"I am sticking to my plan\") over emotional language (\"I'm getting killed!\") prevents revenge trading and tilt."},{"k":"Consistency","v":"Daily visualization of flawless execution (process) over counting money (outcome) builds the neural pathways for repetitive, disciplined action."}],"ml":"Whether you think you can—or think you can't—you're right!"},{"ti":"Awaken the Giant Within","au":"Tony Robbins","pg":378,"th":"True power and lasting change come from mastering your decisions, emotions, and focus. Your destiny is not shaped by conditions, but by the conscious choices you make about what to focus on, what things mean, and what actions to…","ap":[{"k":"Decide your standards","v":"Define and commit to your trading rules (e.g., max risk per trade, required setups). Refuse to tolerate deviations."},{"k":"Process over outcome","v":"Focus obsessively on executing your system flawlessly, not on daily P&L. The results are a byproduct of consistent action."},{"k":"Master your state","v":"Use NAC to associate intense pain with breaking discipline (e.g., revenge trading) and intense pleasure with following your process."}],"ml":"It is in your moments of decision that your destiny is shaped."},{"ti":"Breaking the Habit of Being Yourself","au":"Joe Dispenza","pg":343,"th":"We are prisoners of our own subconscious programming—neural and chemical habits formed from past experiences that dictate our automatic thoughts, emotional reactions, and behaviors.","ap":[{"k":"Process Over Outcome","v":"Trade from the creative state—focus on executing your system flawlessly, not on P&L fluctuations (which keeps you in survival mode)."},{"k":"Emotional Sovereignty","v":"Overcome the body's memorized stress reactions by refusing to let market noise trigger fear/greed; rewire your emotional response."},{"k":"Consistency Through Being","v":"Move from just thinking about discipline to being disciplined—so your actions align automatically with your trading plan."}],"ml":"The greatest habit you can ever break is the habit of being yourself."},{"ti":"Clear Thinking","au":"Shane Parrish","pg":289,"th":"Clear thinking isn't about knowing more—it's about creating space between stimulus and response. Your biological defaults (emotion, ego, social conformity, inertia) hijack your judgment in ordinary moments, compounding into poor…","ap":[{"k":"Patience","v":"The inertia default makes you want to act. The space is your edge—wait for the setup, not the urge."},{"k":"Emotional control","v":"The emotion default turns a drawdown into revenge trading. Recognize the feeling, do not execute."},{"k":"Consistency","v":"The ego default makes you prove you're right by adding to losers. Stick to your process, not your pride."}],"ml":"The greatest aid to judgment is starting from a good position."},{"ti":"Deep Work","au":"Cal Newport","pg":0,"th":"Deep work is the ability to focus without distraction on a cognitively demanding task, a skill increasingly rare and valuable.","ap":[{"k":"","v":"Schedule and protect blocks for deep work: market analysis, strategy review, and journaling—treat this time as unbreakable."},{"k":"","v":"Ruthlessly eliminate shallow distractions (e.g., social media, news noise) during analysis and execution to prevent attention residue and emotional…"},{"k":"Embrace boredom","v":"by not seeking stimulation between trades, training patience and reducing impulsive decisions."}],"ml":"Deep work is like a superpower in our increasingly competitive twenty-first-century economy."},{"ti":"Emotional Intelligence 2.0","au":"Travis Bradberry","pg":106,"th":"Emotional intelligence (EQ) is the learnable ability to recognize, understand, and manage emotions in oneself and others.","ap":[{"k":"Patience","v":"Use self-awareness to identify the emotional trigger of \"fear of missing out\" (FOMO) and employ self-management to stick to predefined entry rules."},{"k":"Emotional control","v":"Recognize the physical signs of an \"emotional hijack\" after a loss (e.g., tension, rushing) to pause and prevent revenge trading."},{"k":"Consistency","v":"Build \"EQ pathways\" through daily ritual and journaling, making disciplined process execution automatic and less reliant on willpower."}],"ml":"Emotions can override rational thought."},{"ti":"How to Listen","au":"Oscar Trimboli","pg":188,"th":"Deep listening is the hidden key to transformative communication. It moves beyond hearing words to understanding unspoken meaning, context, and intent. Mastery requires a willingness to have your mind changed.","ap":[{"k":"Patience","v":"Use the listening gap to pause, not to jump ahead—wait for the market's full \"story\" instead of reacting to noise."},{"k":"Emotional control","v":"Listen to your internal dialogue without letting it dictate actions; notice the unsaid fears during drawdowns."},{"k":"Consistency","v":"Treat each trade like tuning an instrument—prepare mentally before each session to maintain disciplined attention."}],"ml":"Listening is the willingness to have your mind changed."},{"ti":"How to Win Friends and Influence People","au":"Dale Carnegie","pg":136,"th":"Human success depends on understanding and influencing others by appealing to their deepest needs. Instead of criticism, motivate people by making them feel genuinely important and understood.","ap":[{"k":"Replace self-criticism after losses with structured review.","v":"Analyze the process, not the outcome, to avoid defensive emotional spirals."},{"k":"Design a trading system that aligns with your intrinsic motivations.","v":"Make following rules feel rewarding, not punitive."},{"k":"Focus the pre-trade ritual on understanding the market's \"story.\"","v":"Approach it with genuine curiosity, not just a need to be right."}],"ml":"Any fool can criticize, condemn, and complain—and most fools do."},{"ti":"Hyperfocus","au":"Chris Bailey","pg":246,"th":"True productivity and creativity come from deliberately managing your limited attention in two complementary modes: hyperfocus (deep, single-task concentration) and scatterfocus (intentional mind-wandering).","ap":[{"k":"Patience","v":"Schedule and protect blocks for hyperfocus on market analysis and trade planning—the purposeful work."},{"k":"Emotional Control","v":"Practice meta-awareness to notice when emotions (fear, greed) are hijacking your attentional space. Redirect focus to your process."},{"k":"Consistency","v":"Tame distractions ruthlessly. Create an environment (no phone, no alerts) that makes hyperfocus the default state during trading hours."}],"ml":"We are what we pay attention to."},{"ti":"Mindset","au":"Carol Dweck","pg":283,"th":"Success is not about innate talent but about one's mindset. A fixed mindset believes abilities are static, leading to a need to prove oneself and avoid failure.","ap":[{"k":"Patience","v":"A growth mindset views patience as strategic development time, not wasted time waiting for validation."},{"k":"Emotional control","v":"Losses & drawdowns are feedback, not a verdict on your innate ability as a trader."},{"k":"Consistency","v":"Adherence to a process is a discipline to be cultivated (growth), not a talent you either have or don't (fixed)."}],"ml":"Why waste time proving over and over how great you are, when you could be getting better?"},{"ti":"Moonwalking with Einstein","au":"Joshua Foer","pg":269,"th":"Memory is not an innate gift but a skill built through technique and disciplined practice. The book argues that anyone can cultivate extraordinary recall by leveraging ancient mnemonic methods and structured training…","ap":[{"k":"","v":"Use deliberate practice to rehearse trading plans and review mistakes, not just repeat actions."},{"k":"","v":"Build a mental checklist (memory palace) for pre-trade routines to enforce consistency and reduce emotional decisions."},{"k":"Encode market patterns","v":"as vivid images or stories to internalize lessons and avoid past errors."}],"ml":"What we have been doing over the last century is defining memory incorrectly, understanding it incompletely, applying it inappropriately, and condemning it because it doesn't work and isn't…"},{"ti":"No Excuses","au":"Brian Tracy (Bookey summary)","pg":33,"th":"Success is not a product of luck or talent but of disciplined action. Self-discipline enables you to take complete responsibility for your life and results, transforming your potential into achievement.","ap":[{"k":"Patience & Process","v":"Adhere to your trading plan with no excuses, viewing discipline itself as the primary goal, not individual P&L."},{"k":"Emotional Control","v":"Take responsibility for all losses; analyze them without blame to detach emotion from outcome."},{"k":"Consistency","v":"Use a pre-market routine (clear goals) and a post-market review (accountability) to ritualize the process."}],"ml":"The first step toward success is to accept responsibility for your situation."},{"ti":"No Excuses","au":"Brian Tracy","pg":308,"th":"Self-discipline is the fundamental driver of success, defined as the ability to do what you should do, when you should do it, whether you feel like it or not.","ap":[{"k":"Process-over-Outcome","v":"Discipline means executing your trading plan flawlessly (dinner) regardless of a single trade's P&L (dessert)."},{"k":"Emotional Control","v":"Master the Expediency Factor—the urge to chase a trade, revenge trade, or break rules for immediate gratification."},{"k":"Patience & Long-Term Perspective","v":"Base every trade on your long-term edge and risk parameters. Avoid the \"get-rich-quick\" path of least resistance, which is usually a road to ruin."}],"ml":"No more excuses. Do it or don't do it—but don't make excuses."},{"ti":"Psycho-Cybernetics","au":"Maxwell Maltz","pg":304,"th":"Your self-image—the mental blueprint of who you believe you are—sets the absolute boundaries of your performance. Change that image, and your actions, habits, and results change automatically.","ap":[{"k":"Patience","v":"See yourself as a trader who waits for high-probability setups. Your self-image will reject impulsive entries as inconsistent with who you are."},{"k":"Emotional control","v":"When fear or greed arises, recognize it as the \"failure mechanism\" trying to solve a problem."},{"k":"Consistency","v":"Practice your trade plan daily in imagination as if you have already succeeded."}],"ml":"The self-image sets the boundaries of individual accomplishment. Expand the self-image and you expand the 'area of the possible.'"},{"ti":"The Art of Laziness","au":"Library Mindset","pg":79,"th":"True productivity is not about constant busyness but about focused, intentional action on what truly matters. It requires taking full responsibility for your outcomes, stepping out of your comfort zone, and being impatient with…","ap":[{"k":"Process-over-outcome","v":"Focus relentlessly on executing your trading plan (action), not on daily P&L (result), which you cannot fully control."},{"k":"Emotional control","v":"Accept 100% responsibility for every trade. This prevents blame-shifting and forces objective review, separating emotion from analysis."},{"k":"Patience","v":"Be \"impatient\" in preparing and placing valid setups, but \"patient\" in allowing edges to play out over hundreds of trades, not forcing action."}],"ml":"We must all suffer from one of two pains: the pain of discipline or the pain of regret."},{"ti":"The Art of Thinking Clearly","au":"Rolf Dobelli","pg":225,"th":"The book catalogs systematic cognitive errors that cloud rational decision-making. For a trader, recognizing these built-in mental pitfalls is essential to avoid self-sabotage and make clearer, more disciplined choices under…","ap":[{"k":"Patience","v":"Fight Action Bias; waiting for a true edge is a valid strategy. Resist the urge to trade just to be active."},{"k":"Emotional Control","v":"Counter Loss Aversion and the Sunk Cost Fallacy by pre-defining stop-losses and adhering to them impartially."},{"k":"Consistency","v":"Build a process that systematically guards against Confirmation Bias by seeking disconfirming evidence for every trade thesis."}],"ml":"If 50 million people say something foolish, it is still foolish."},{"ti":"The Kybalion","au":"Three Initiates","pg":131,"th":"The universe operates according to immutable mental and spiritual laws. Mastering these principles allows one to transcend being an effect of circumstance and become a cause, achieving self-mastery and poise.","ap":[{"k":"Mentalism & Cause and Effect","v":"Your trading reality is a mental creation. Discipline is the cause; consistent results are the effect. There is no \"luck.\""},{"k":"Polarity","v":"Fear and greed are not opposites but extremes of the same emotional energy. Mastery involves neutralizing these poles to operate from calm…"},{"k":"Rhythm","v":"Markets and your emotional state have tides. Use conscious will (neutralization) to arrest the negative swing—"}],"ml":"The lips of wisdom are closed, except to the ears of Understanding."},{"ti":"The Magic of Thinking Big","au":"David J Schwartz","pg":144,"th":"Success is determined by the size of your thinking, not by external conditions. By cultivating an unstoppable belief in yourself and eliminating self-imposed limitations, you create the mindset that attracts and achieves…","ap":[{"k":"Patience is a belief in process","v":"Cure \"Intelligence Excusitis\"—trust your edge without second-guessing; waiting is active confidence, not inaction."},{"k":"Emotional control stems from managed thinking","v":"Isolate and act on specific fears (e.g., stop-loss execution) instead of dwelling on vague anxiety; deposit positive trade reviews."},{"k":"Consistency requires killing excuses","v":"Never blame \"bad luck\" or \"the market\"; own all outcomes and focus on correct actions, not P&L fluctuations."}],"ml":"Action cures fear."},{"ti":"The Mountain Is You","au":"Brianna Wiest","pg":238,"th":"The trader's greatest obstacle is internal self-sabotage, not the market. Your \"mountain\" is the subconscious conflict between conscious goals (profit, consistency) and unconscious needs (safety, familiarity).","ap":[{"k":"Process-over-outcome","v":"Breaking rules after a loss is self-sabotage driven by attachment to a specific P&L outcome."},{"k":"Emotional control","v":"Impulsive revenge trading signals an unconscious need (e.g., for control or vindication). Address the root need, not just suppress the action."},{"k":"Consistency","v":"Inconsistent performance often follows success, as you subconsciously sabotage to return to your familiar \"baseline.\" Protect gains by consciously…"}],"ml":"In the end, it is not the mountain that you must master, but yourself."},{"ti":"The Power of Now","au":"Eckhart Tolle","pg":216,"th":"True freedom and peace come from disidentifying with the incessant thinking of the mind. By anchoring awareness in the present moment—the Now—you access a deeper dimension of consciousness beyond ego and suffering.","ap":[{"k":"Patience is presence.","v":"Waiting for a setup is not dead time; it's an opportunity to practice being anchored in the Now, free from mental restlessness."},{"k":"Emotional control is disidentification.","v":"Observe the \"pain-body\" reactions (fear, greed) as they arise without becoming them. You are the awareness, not the emotion."},{"k":"Consistency comes from process.","v":"Adhere to your plan as an act of present-moment surrender to the process, not as a means to a future outcome."}],"ml":"The past has no power over the present moment."},{"ti":"The Power of Positive Thinking","au":"Norman Vincent Peale","pg":261,"th":"Your mind determines your reality. By cultivating faith and positive thought patterns, you can overcome self-doubt and external obstacles, unlocking latent personal power.","ap":[{"k":"Process-over-outcome","v":"Visualize executing your plan flawlessly, not the P&L. The \"mental picture of succeeding\" is following your rules, not the market's gift."},{"k":"Emotional control","v":"\"Empty the mind\" after each trade. Purge regret from losses and euphoria from wins to approach the next trade with a clean slate."},{"k":"Consistency","v":"\"Never take counsel of your fears.\" Do not alter your tested process based on recent losses or market noise. Discipline is acting despite fear."}],"ml":"The rough is only mental."},{"ti":"The Power of Your Subconscious Mind","au":"Joseph Murphy","pg":171,"th":"Your subconscious mind shapes your reality based on your habitual thoughts and beliefs. By consciously directing and impressing positive, specific ideas upon it, you can manifest desired conditions, including success and…","ap":[{"k":"Patience","v":"Continually impress upon your subconscious the belief that \"my edge plays out over time,\" making waiting a natural state."},{"k":"Emotional Control","v":"Use a nightly mental diet to replace fears of loss with convictions of abundance and systematic execution."},{"k":"Consistency","v":"Program your subconscious with the self-image of a disciplined process-follower, making disciplined actions automatic."}],"ml":"As a man thinketh in his subconscious mind, so is he."},{"ti":"The Psychology of Money","au":"Morgan Housel","pg":253,"th":"Financial success is not primarily a function of intelligence or technical knowledge, but of behavior. Doing well with money is a soft skill, where how you behave is more important than what you know.","ap":[{"k":"","v":"Define your \"enough\" to avoid ruinous risk-taking driven by insatiable greed."},{"k":"","v":"Build a process with a huge margin of safety (\"room for error\") so you can withstand being wrong without being wiped out."},{"k":"","v":"Focus on a psychologically sustainable and consistent process, not on chasing the theoretically perfect, rational trade."}],"ml":"A genius is the man who can do the average thing when everyone else around him is losing his mind."},{"ti":"The Richest Man in Babylon","au":"George S Clason","pg":122,"th":"True wealth is not an accident of luck, but the inevitable result of following timeless financial principles. It is built through disciplined saving, wise investment, and a relentless focus on increasing one's financial…","ap":[{"k":"Pay yourself first from profits","v":"Systematically withdraw a portion of trading profits to safeguard capital, preventing the \"do-or-die\" mentality."},{"k":"Guard thy capital from loss","v":"Adhere strictly to risk management rules (stop-losses, position sizing); treat capital preservation as the first law."},{"k":"Make thy capital multiply through process, not gambling","v":"Follow a proven, back-tested strategy; let the system generate returns over time instead of forcing trades for quick wins."}],"ml":"A part of all you earn is yours to keep."},{"ti":"The Slight Edge","au":"Jeff Olson","pg":212,"th":"Success is not the result of massive, overnight actions but the accumulation of simple, daily disciplines compounded over time.","ap":[{"k":"Patience as a daily practice","v":"Execute your trading plan consistently, even when results aren't immediate. Trust the compound effect of edge."},{"k":"Emotional control through routine","v":"Anchor your mindset with pre-market and post-market rituals. Master the mundane tasks of journaling and review."},{"k":"Consistency over brilliance","v":"Focus on following your process flawlessly, not on hitting home runs. A series of small, correct actions builds a track record."}],"ml":"Simple daily disciplines—little things that seem insignificant in the moment—compounded over time, yield very big results."},{"ti":"The Way of the Superior Man","au":"David Deida","pg":146,"th":"A man's highest purpose is his mission, which must remain his priority over relationship comforts or emotional ease. Life is an endless, edge-leaning challenge, not a problem to be solved.","ap":[{"k":"","v":"Accept the market is never \"solved\"; focus on the endless process of engagement, not a final destination of being \"done.\""},{"k":"","v":"Trade through losses and drawdowns with an open heart (awareness), not by shutting down emotionally or deviating from your process."},{"k":"","v":"Define and operate at your genuine risk/tolerance edge—no over-leveraging (faking it) or under-committing (hanging back)."}],"ml":"It never ends."},{"ti":"Think and Grow Rich","au":"Napoleon Hill","pg":253,"th":"Success is achieved not by luck, but by mastering the mind. A burning desire, backed by unwavering faith, a definite plan, and persistence in the face of defeat, transmutes thought into its physical, monetary equivalent.","ap":[{"k":"Desire & Plan","v":"Define your trading edge and rules with surgical precision; a vague wish invites failure."},{"k":"Auto-Suggestion","v":"Use daily affirmations and review to inoculate your mind against fear (poverty, criticism) and instill process faith."},{"k":"Persistence","v":"Adhere to your plan through drawdowns; the \"Three Feet from Gold\" lesson means most fail right before a phase turns."}],"ml":"Whatever the mind can conceive and believe, it can achieve."}];
+var BOOK_TL={};
+function bookIndexOfWeek(){
+  var p=nyParts();
+  var days=Math.floor(Date.UTC(p.y,p.mo-1,p.d)/86400000);
+  var week=Math.floor((days-4)/7);  /* epoch day 0 = Thursday; -4 shifts the boundary to Monday */
+  var n=BOOKS.length;
+  return ((week%n)+n)%n;
+}
+function bookOfWeek(){
+  var i=bookIndexOfWeek(), b=BOOKS[i];
+  if(curLang==="en")return b;
+  var t=(BOOK_TL[curLang]||{})[i]||(BOOK_TL[curLang]||{})[String(i)];
+  if(!t)return b;
+  var ap=[];
+  for(var j=0;j<b.ap.length;j++){
+    var src=(t.ap&&t.ap[j])||{};
+    ap.push({k:src.k||b.ap[j].k, v:src.v||b.ap[j].v});
+  }
+  return {ti:b.ti,au:b.au,pg:b.pg,th:t.th||b.th,ap:ap,ml:t.ml||b.ml};
+}
+function renderBook(){
+  if(!document.getElementById("bookCard"))return;
+  var b=bookOfWeek();
+  $("#bookTitle").textContent=b.ti;
+  $("#bookAuthor").textContent="— "+b.au;
+  $("#bookProv").textContent=TR("Distilled from")+" "+(b.pg?b.pg+"p · ":"")+TR("principle-note reference");
+  $("#bookThesisLbl").textContent=TR("CORE THESIS");
+  $("#bookThesis").textContent=b.th;
+  $("#bookAppliedLbl").textContent=TR("APPLIED TO TRADING");
+  var wrap=$("#bookApplied"); wrap.innerHTML="";
+  for(var i=0;i<b.ap.length;i++){
+    var row=document.createElement("div"); row.className="bkap";
+    if(b.ap[i].k){var kk=document.createElement("span");kk.className="bkk";kk.textContent=b.ap[i].k+(/[.!?]["”’']?$/.test(b.ap[i].k)?" ":" — ");row.appendChild(kk);}
+    row.appendChild(document.createTextNode(b.ap[i].v));
+    wrap.appendChild(row);
+  }
+  $("#bookLine").textContent=b.ml;
+}
 function renderQuote(){
   const p=nyParts();
   const idx=dayOfYear(p)%QUOTES.length;
@@ -1205,7 +1282,7 @@ let lastDay=todayKey();
 
 function tick(){
   const p=nyParts();
-  if(keyOf(p.y,p.mo,p.d)!==lastDay){lastDay=keyOf(p.y,p.mo,p.d);initChecklist();renderCapToday();initCalendar(todayKey());renderQuote();}
+  if(keyOf(p.y,p.mo,p.d)!==lastDay){lastDay=keyOf(p.y,p.mo,p.d);initChecklist();renderCapToday();initCalendar(todayKey());renderQuote();renderBook();}
   $("#bigClock").textContent=pad(p.h)+":"+pad(p.m)+":"+pad(p.s);
   $("#clockDate").textContent=TR(p.wd)+" · "+p.y+"-"+pad(p.mo)+"-"+pad(p.d)+" ET";
 
@@ -1952,6 +2029,8 @@ document.addEventListener("keydown",e=>{
 function blobToImg(blob){return new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=URL.createObjectURL(blob);});}
 (function(){var b=document.getElementById("quoteShare");
   if(b)b.addEventListener("click",function(){try{buildQuoteCard();}catch(e){}});})();
+(function(){var b=document.getElementById("bookShare");
+  if(b)b.addEventListener("click",function(){try{buildBookCard();}catch(e){}});})();
 function wrapLines(ctx,text,maxW){
   const words=String(text).replace(/\s+/g," ").trim().split(" ");
   const lines=[]; let line="";
@@ -1961,6 +2040,190 @@ function wrapLines(ctx,text,maxW){
   }
   if(line)lines.push(line);
   return lines;
+}
+/* Shared Sharingan renderer - same geometry as the background SVG, drawn on canvas so
+   every share card (quote, book) uses one source of truth. alpha scales the whole eye;
+   the inner ring keeps its 0.3 relative opacity like the SVG's stroke-opacity. */
+function drawSharingan(x,cx,cy,size,alpha){
+  x.save();
+  x.globalAlpha=alpha;
+  x.translate(cx,cy); x.scale(size/300,size/300); x.translate(-150,-150);
+  var g=x.createRadialGradient(150,150,0,150,150,145);
+  g.addColorStop(0,"#660000"); g.addColorStop(0.6,"#c30000"); g.addColorStop(1,"#a00000");
+  x.beginPath(); x.arc(150,150,145,0,2*Math.PI); x.fillStyle=g; x.fill();
+  x.strokeStyle="#000"; x.lineWidth=10; x.stroke();
+  x.save(); x.globalAlpha=alpha*0.3;
+  x.beginPath(); x.arc(150,150,90,0,2*Math.PI); x.strokeStyle="#000"; x.lineWidth=4; x.stroke();
+  x.restore();
+  var tomoe=new Path2D("M 60,170 59.4,152.9 C 43.9,152.9 28.7,154.1 18.8,133.3 22.4,156 32.8,170 60,170 z");
+  for(var i=0;i<3;i++){
+    x.save();
+    x.translate(150,150); x.rotate(i*2*Math.PI/3); x.translate(-150,-150);
+    x.beginPath(); x.arc(60,150,20,0,2*Math.PI); x.fillStyle="#000"; x.fill();
+    x.fill(tomoe);
+    x.restore();
+  }
+  x.beginPath(); x.arc(150,150,25,0,2*Math.PI); x.fillStyle="#000"; x.fill();
+  x.restore();
+}
+function buildBookCard() {
+  var W = 1080, pad = 64, colW = W - 2 * pad;
+  var F_SERIF = "'Georgia',serif";
+  var F_SANS = "system-ui,-apple-system,'Segoe UI',Arial,sans-serif";
+  var b = bookOfWeek();
+  var p = nyParts();
+  var dateStr = p.y + "-" + ("0" + p.mo).slice(-2) + "-" + ("0" + p.d).slice(-2);
+  var m = document.createElement("canvas").getContext("2d");
+  m.font = "bold 54px " + F_SERIF;
+  var titleLines = wrapLines(m, b.ti, colW);
+  m.font = "27px " + F_SANS;
+  var thesisLines = wrapLines(m, b.th, colW);
+  var bulletLinesArray = [];
+  for (var i = 0; i < b.ap.length; i++) {
+    var item = b.ap[i];
+    var text = (item.k ? item.k + (/[.!?]["\u201d\u2019']?$/.test(item.k) ? " " : " \u2014 ") : "") + item.v;
+    m.font = "24px " + F_SANS;
+    bulletLinesArray.push(wrapLines(m, text, colW - 34));
+  }
+  m.font = "italic 28px " + F_SERIF;
+  var mlLines = wrapLines(m, b.ml, colW - 30);
+  var H = pad
+    + 52
+    + 46
+    + 26 + 14
+    + titleLines.length * 62
+    + 40
+    + 30
+    + 34
+    + 28
+    + thesisLines.length * 38
+    + 34
+    + 28
+    + (function() {
+        var sum = 0;
+        for (var i = 0; i < bulletLinesArray.length; i++) {
+          sum += bulletLinesArray[i].length * 34 + 16;
+        }
+        return sum;
+      })()
+    + 30
+    + mlLines.length * 40 + 24
+    + 54
+    + pad;
+  H = Math.round(H);
+  var cv = document.createElement("canvas");
+  cv.width = W;
+  cv.height = H;
+  var x = cv.getContext("2d");
+  x.fillStyle = "#0b0708";
+  x.fillRect(0, 0, W, H);
+  var grad = x.createRadialGradient(W / 2, H * 0.5, 60, W / 2, H * 0.5, W * 0.95);
+  grad.addColorStop(0, "rgba(224,18,43,0.16)");
+  grad.addColorStop(1, "rgba(224,18,43,0)");
+  x.fillStyle = grad;
+  x.fillRect(0, 0, W, H);
+  drawSharingan(x, W / 2, H * 0.52, Math.min(880, H * 0.62), 0.13);
+  x.textBaseline = "top";
+  var y = pad;
+  var uname = getUser();
+  var brand = "ANBU \u00b7 TIME & PRICE" + (uname ? " \u2014 " + uname.toUpperCase() : "");
+  x.font = "bold 40px " + F_SERIF;
+  if (x.measureText(brand).width > colW - 340) {
+    x.font = "bold 30px " + F_SERIF;
+  }
+  x.fillStyle = "#f0eaeb";
+  x.fillText(brand, pad, y);
+  x.textAlign = "right";
+  x.font = "italic 19px " + F_SERIF;
+  x.fillStyle = "#f0eaeb";
+  x.fillText(TR("There are no shortcuts to riches."), W - pad, y + 2);
+  x.fillStyle = "#e0122b";
+  x.fillText(TR("Stay disciplined to your system."), W - pad, y + 28);
+  x.textAlign = "left";
+  y += 52 + 46;
+  x.fillStyle = "#e0122b";
+  x.font = "bold 22px " + F_SANS;
+  x.fillText(TR("BOOK OF THE WEEK"), pad, y);
+  y += 26 + 14;
+  x.fillStyle = "#f0eaeb";
+  x.font = "bold 54px " + F_SERIF;
+  for (var i = 0; i < titleLines.length; i++) {
+    x.fillText(titleLines[i], pad, y);
+    y += 62;
+  }
+  x.fillStyle = "#c83e3e";
+  x.font = "italic 30px " + F_SERIF;
+  x.fillText("\u2014 " + b.au, pad, y);
+  y += 40;
+  x.fillStyle = "#8a7a7d";
+  x.font = "19px " + F_SANS;
+  x.fillText(TR("Distilled from") + " " + (b.pg ? b.pg + "p \u00b7 " : "") + TR("principle-note reference"), pad, y);
+  y += 30;
+  x.strokeStyle = "rgba(224,18,43,0.35)";
+  x.lineWidth = 1.5;
+  x.beginPath();
+  x.moveTo(pad, y + 10);
+  x.lineTo(W - pad, y + 10);
+  x.stroke();
+  y += 34;
+  x.fillStyle = "#e8a020";
+  x.font = "bold 20px " + F_SANS;
+  x.fillText(TR("CORE THESIS"), pad, y);
+  y += 28;
+  x.fillStyle = "#e8ddd6";
+  x.font = "27px " + F_SANS;
+  for (var i = 0; i < thesisLines.length; i++) {
+    x.fillText(thesisLines[i], pad, y);
+    y += 38;
+  }
+  y += 34;
+  x.fillStyle = "#e8a020";
+  x.font = "bold 20px " + F_SANS;
+  x.fillText(TR("APPLIED TO TRADING"), pad, y);
+  y += 28;
+  for (var i = 0; i < bulletLinesArray.length; i++) {
+    x.fillStyle = "#e0122b";
+    x.beginPath();
+    x.arc(pad + 7, y + 13, 5, 0, 2 * Math.PI);
+    x.fill();
+    x.fillStyle = "#e8ddd6";
+    x.font = "24px " + F_SANS;
+    var lines = bulletLinesArray[i];
+    for (var j = 0; j < lines.length; j++) {
+      x.fillText(lines[j], pad + 34, y);
+      y += 34;
+    }
+    y += 16;
+  }
+  y += 30;
+  x.fillStyle = "#e0122b";
+  x.fillRect(pad, y, 4, mlLines.length * 40);
+  x.fillStyle = "#f0eaeb";
+  x.font = "italic 28px " + F_SERIF;
+  for (var i = 0; i < mlLines.length; i++) {
+    x.fillText(mlLines[i], pad + 30, y);
+    y += 40;
+  }
+  y += 24;
+  x.textBaseline = "alphabetic";
+  x.font = "20px " + F_SANS;
+  x.fillStyle = "#8a7a7d";
+  x.fillText(dateStr, pad, H - pad);
+  x.textAlign = "right";
+  x.fillText(TR("BOOK OF THE WEEK"), W - pad, H - pad);
+  x.textAlign = "left";
+  cv.toBlob(function(blob) {
+    if (cardURL) URL.revokeObjectURL(cardURL);
+    cardURL = URL.createObjectURL(blob);
+    cardName = "ANBU_book_" + dateStr + ".png";
+    $("#cardImg").src = cardURL;
+    $("#cardTitle").textContent = TR("BOOK OF THE WEEK");
+    $("#cardModal").classList.add("on");
+    $("#cardPrev").style.display = "none";
+    $("#cardNext").style.display = "none";
+    cardCtx = { book: true, n: 1 };
+  }, "image/png");
+  return true;
 }
 function buildQuoteCard(){
   var cv=document.createElement("canvas");
@@ -1979,70 +2242,7 @@ function buildQuoteCard(){
   ctx.fillStyle=rg;
   ctx.fillRect(0,0,W,H);
 
-  // 2. Sharingan watermark (centered at W/2, H*0.44, size 780)
-  var size=780;
-  ctx.save();
-  ctx.globalAlpha=0.20;
-  ctx.translate(W/2, H*0.50);
-  ctx.scale(size/300, size/300);
-  ctx.translate(-150, -150);
-
-  // outer circle
-  var outerGrad=ctx.createRadialGradient(150,150,0,150,150,145);
-  outerGrad.addColorStop(0,"#660000");
-  outerGrad.addColorStop(0.6,"#c30000");
-  outerGrad.addColorStop(1,"#a00000");
-  ctx.beginPath();
-  ctx.arc(150,150,145,0,2*Math.PI);
-  ctx.fillStyle=outerGrad;
-  ctx.fill();
-  ctx.strokeStyle="#000";
-  ctx.lineWidth=10;
-  ctx.stroke();
-
-  // ring
-  ctx.globalAlpha=0.06;
-  ctx.beginPath();
-  ctx.arc(150,150,90,0,2*Math.PI);
-  ctx.strokeStyle="#000";
-  ctx.lineWidth=4;
-  ctx.stroke();
-  ctx.globalAlpha=0.20; // restore for subsequent
-
-  // tomoe (three rotations)
-  function drawTomoe(){
-    ctx.beginPath();
-    ctx.arc(60,150,20,0,2*Math.PI);
-    ctx.fillStyle="#000";
-    ctx.fill();
-    var tomoe=new Path2D("M 60,170 59.4,152.9 C 43.9,152.9 28.7,154.1 18.8,133.3 22.4,156 32.8,170 60,170 z");
-    ctx.fill(tomoe);
-  }
-  // 0 deg
-  drawTomoe();
-  // 120 deg
-  ctx.save();
-  ctx.translate(150,150);
-  ctx.rotate(2*Math.PI/3);
-  ctx.translate(-150,-150);
-  drawTomoe();
-  ctx.restore();
-  // -120 deg (240 deg)
-  ctx.save();
-  ctx.translate(150,150);
-  ctx.rotate(4*Math.PI/3);
-  ctx.translate(-150,-150);
-  drawTomoe();
-  ctx.restore();
-
-  // pupil
-  ctx.beginPath();
-  ctx.arc(150,150,25,0,2*Math.PI);
-  ctx.fillStyle="#000";
-  ctx.fill();
-
-  ctx.restore(); // restore globalAlpha and transform
-  ctx.globalAlpha=1.0;
+  drawSharingan(ctx, W/2, H*0.50, 780, 0.20);
 
   // 3. Header
   ctx.textAlign="left";
@@ -2225,6 +2425,7 @@ setInterval(()=>{
   try{if(typeof renderAplusStars==="function")renderAplusStars();}catch(e){}
   try{renderCal();}catch(e){}
   try{if(selDate===_lastDay)initCalendar(nk);}catch(e){}
+  try{renderBook();}catch(e){}
 },15000);
 let cardURL="", cardName="anbu-card.png";
 let cardCtx={date:null,ti:0,n:1};
@@ -2338,6 +2539,7 @@ $("#langSw").addEventListener("click",e=>{const b=e.target.closest("[data-lang]"
 document.addEventListener("DOMContentLoaded",()=>{
   loadSecOverrides();
   renderQuote();
+  try{renderBook();}catch(e){}
   initChecklist();
   renderCapToday();
   initCalendar(todayKey());
