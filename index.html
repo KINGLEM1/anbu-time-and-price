@@ -350,6 +350,26 @@ details .body i{color:var(--text-3)}
     <div id="clockDate">—</div>
   </div>
 
+  <div class="card" id="stackCard">
+    <div class="ct" data-i18n="probStack">PROBABILITY STACK</div>
+    <div id="stackRead" class="s0">— timing factors —</div>
+    <div class="frow">
+      <div class="factor" id="fKz"><span class="dot"></span><span class="nm"><span data-i18n="f.kz">Kill Zone</span><small>xx:50–xx:09 — first / last 10 min of every 1H candle</small></span><span class="st">WAIT</span></div>
+      <div class="factor" id="fMc"><span class="dot"></span><span class="nm"><span data-i18n="f.mc">Macro Window</span><small>09:50 · 10:50–11:10 · 11:50–12:10 · 12:50–13:10 (±10m)</small></span><span class="st">WAIT</span></div>
+      <div class="factor" id="f4h"><span class="dot"></span><span class="nm"><span data-i18n="f.4h">4H Candle Open</span><small>02 · 06 · 10 · 14 · 18 · 22 (±15m)</small></span><span class="st">WAIT</span></div>
+    </div>
+    <p class="note" style="margin:10px 0 0;text-align:left">The stack is <b>not a gate</b> — you can take a trade outside a macro, and you don't have to take one inside it. Lit factors just mean <b class="red">more probability is on your side</b>. Stack them; know your odds.</p>
+  </div>
+
+  <div class="card">
+    <div class="ct" data-i18n="macroWheel">MACRO WHEEL — TIME ANCHORS</div>
+    <div class="wheel" id="wheel"></div>
+  </div>
+
+  <p class="note">Wheel auto-centers on the current / next macro and spins forward live. Kill zones &amp; macros are the highest-probability windows — stack them with model + checklist.</p>
+
+  <div class="gt" style="margin-top:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">DAILY DISCIPLINE — END OF DAY <button class="btn" id="dlyEdit" style="min-height:30px;padding:4px 9px">EDIT</button></div>
+  <div id="grpB"></div>
   <div class="card" id="quoteCard">
     <div class="qlbl" data-i18n="quoteLabel">QUOTE OF THE DAY</div>
     <div id="quoteText" data-noi18n>—</div>
@@ -371,26 +391,6 @@ details .body i{color:var(--text-3)}
   </div>
 
 
-  <div class="card" id="stackCard">
-    <div class="ct" data-i18n="probStack">PROBABILITY STACK</div>
-    <div id="stackRead" class="s0">— timing factors —</div>
-    <div class="frow">
-      <div class="factor" id="fKz"><span class="dot"></span><span class="nm"><span data-i18n="f.kz">Kill Zone</span><small>xx:50–xx:09 — first / last 10 min of every 1H candle</small></span><span class="st">WAIT</span></div>
-      <div class="factor" id="fMc"><span class="dot"></span><span class="nm"><span data-i18n="f.mc">Macro Window</span><small>09:50 · 10:50–11:10 · 11:50–12:10 · 12:50–13:10 (±10m)</small></span><span class="st">WAIT</span></div>
-      <div class="factor" id="f4h"><span class="dot"></span><span class="nm"><span data-i18n="f.4h">4H Candle Open</span><small>02 · 06 · 10 · 14 · 18 · 22 (±15m)</small></span><span class="st">WAIT</span></div>
-    </div>
-    <p class="note" style="margin:10px 0 0;text-align:left">The stack is <b>not a gate</b> — you can take a trade outside a macro, and you don't have to take one inside it. Lit factors just mean <b class="red">more probability is on your side</b>. Stack them; know your odds.</p>
-  </div>
-
-  <div class="card">
-    <div class="ct" data-i18n="macroWheel">MACRO WHEEL — TIME ANCHORS</div>
-    <div class="wheel" id="wheel"></div>
-  </div>
-
-  <p class="note">Wheel auto-centers on the current / next macro and spins forward live. Kill zones &amp; macros are the highest-probability windows — stack them with model + checklist.</p>
-
-  <div class="gt" style="margin-top:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">DAILY DISCIPLINE — END OF DAY <button class="btn" id="dlyEdit" style="min-height:30px;padding:4px 9px">EDIT</button></div>
-  <div id="grpB"></div>
 </section>
 
 <!-- TAB 2 : CHECKLIST -->
