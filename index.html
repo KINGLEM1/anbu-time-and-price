@@ -115,6 +115,13 @@ header.top .creed .c2{color:var(--crimson);font-style:normal;text-shadow:0 0 12p
 .mbtn:active{border-color:var(--crimson);color:var(--crimson)}
 .thumbs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
 .thumbs:empty{margin-bottom:0}
+.tj{border:1px solid var(--line);border-radius:12px;padding:10px;margin-bottom:10px;background:rgba(224,18,43,.03)}
+.tjhd{display:flex;align-items:center;justify-content:space-between;font-family:var(--serif);font-size:12px;letter-spacing:2.5px;color:var(--crimson);margin-bottom:8px}
+.tjrm{background:none;border:1px solid var(--line);color:var(--text-3);font-size:10px;letter-spacing:1px;padding:3px 8px;border-radius:6px;cursor:pointer}
+.tjrm:active{border-color:var(--crimson);color:var(--crimson)}
+.addtrade{width:100%;margin-bottom:12px;opacity:.9}
+.jhint{display:block;font-family:var(--sans);font-size:10.5px;letter-spacing:.3px;color:var(--text-3);text-transform:none;margin-top:3px}
+.lb-empty{color:var(--text-3);font-style:italic}
 .th{position:relative;display:inline-block}
 .th img{width:64px;height:44px;object-fit:cover;border-radius:7px;border:1px solid var(--line);display:block;cursor:pointer;background:#000}
 .th button{position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,.85);border:1px solid rgba(224,18,43,.5);color:var(--crimson);font-size:10px;line-height:1;cursor:pointer}
@@ -134,6 +141,8 @@ header.top .creed .c2{color:var(--crimson);font-style:normal;text-shadow:0 0 12p
 .cell .cs{font-size:9px;letter-spacing:.3px;line-height:1.2}
 .cell .cs.pos{color:var(--jade)}.cell .cs.neg{color:var(--crimson)}
 .cell .cs.st{color:var(--amber);text-shadow:0 0 6px rgba(232,160,32,.5)}
+.cell.hasj::after{content:"";position:absolute;top:5px;right:5px;width:5px;height:5px;border-radius:50%;background:var(--crimson);box-shadow:0 0 5px var(--glow)}
+.cell.sel.hasj::after{background:#fff;box-shadow:none}
 .cell.today{border-color:rgba(255,255,255,.16)}
 .cell.sel{background:rgba(224,18,43,.85);color:#fff;box-shadow:0 0 14px var(--glow)}
 .cell.sel .cs.pos,.cell.sel .cs.neg,.cell.sel .cs.st{color:#fff}
@@ -353,8 +362,9 @@ details .body i{color:var(--text-3)}
     <div id="tTotal"></div>
   </div>
 
-  <div class="gt" style="margin-top:10px">BEFORE / DURING / AFTER — <span id="capDateLbl"></span></div>
-  <div id="calCapture" class="caprow"></div>
+  <div class="gt" style="margin-top:10px">TRADE JOURNAL — <span id="capDateLbl"></span> <span class="jhint">before · during · after — note + screenshot per trade · tap a shot to enlarge with its note</span></div>
+  <div id="calJournal"></div>
+  <button class="btn addtrade" id="calAddTrade">+ ADD A TRADE TO THIS DAY</button>
 
   <div class="card">
     <div class="ct">WHAT I COULD HAVE DONE BETTER</div>
@@ -1118,7 +1128,7 @@ function refreshThumbsTrade(date,tradeIdx,stage){
   const kp=tk+":photo";
   idbGet(kp).then(ph=>{
     let h="";
-    if(ph&&ph.blob)h='<span class="th"><img src="'+objURL(kp,ph.blob)+'" data-lb title="'+escA(ph.name||"photo")+'"><button data-mrm="'+kp+'">✕</button></span>';
+    if(ph&&ph.blob)h='<span class="th"><img src="'+objURL(kp,ph.blob)+'" data-lb data-lbkey="'+escA(kp)+'" title="'+escA(ph.name||"photo")+'"><button data-mrm="'+kp+'">✕</button></span>';
     els.forEach(el=>el.innerHTML=h);
   });
 }
@@ -1150,7 +1160,8 @@ document.addEventListener("click",e=>{
       if(k.indexOf(":t")!==-1){
         var parts=k.split(":");
         var date=parts[0], tradeIdx=parts[1].slice(1), stage=parts[2];
-        refreshThumbsTrade(date,tradeIdx,stage);
+        refreshThumbsTrade(date,tradeIdx,stage); renderCal();
+        if(calViewMode==="feed")renderFeed();
       }else{
         var parts=k.split(":");
         refreshThumbs(parts[0],parts[1]); renderCal();
@@ -1158,7 +1169,7 @@ document.addEventListener("click",e=>{
     }); return;
   }
   const gi=e.target.closest(".gal img,[data-lb]");
-  if(gi){openLB(gi.src,getModelText(gi)); return;}
+  if(gi){openLB(gi.src, gi.dataset.lbkey?journalCaption(gi.dataset.lbkey):getModelText(gi)); return;}
   const fc=e.target.closest("#calFeed [data-day]");
   if(fc){
     selDate=fc.dataset.day;
@@ -1182,7 +1193,8 @@ $("#filePhoto").addEventListener("change",()=>{
     if(urlCache[k]){URL.revokeObjectURL(urlCache[k]);delete urlCache[k];}
     idxAdd(k);
     if(pending.trade!==undefined){
-      refreshThumbsTrade(pending.date,pending.trade,pending.stage);
+      refreshThumbsTrade(pending.date,pending.trade,pending.stage); renderCal();
+      if(calViewMode==="feed")renderFeed();
     }else{
       refreshThumbs(pending.date,pending.stage); renderCal();
     }
@@ -1219,8 +1231,11 @@ function hasEntry(d){
     if(STAGES.some(s=>j[s.id]&&(j[s.id].note||"").trim().length))return true;
     if((j.better||"").trim().length)return true;
   }
+  const jt=loadJT(d);
+  if(jt.some(t=>t&&STAGES.some(s=>t[s.id]&&(t[s.id].note||"").trim().length)))return true;
   const idx=mediaIdx();
-  return STAGES.some(s=>idx[d+":"+s.id+":photo"]);
+  if(STAGES.some(s=>idx[d+":"+s.id+":photo"]))return true;
+  return Object.keys(idx).some(k=>k.indexOf(d+":t")===0&&k.endsWith(":photo"));
 }
 function renderCal(){
   const MN=["JANUARY","FEBRUARY","MARCH","APRIL","MAY","JUNE","JULY","AUGUST","SEPTEMBER","OCTOBER","NOVEMBER","DECEMBER"];
@@ -1232,6 +1247,7 @@ function renderCal(){
     const k=keyOf(viewY,viewM+1,d), tr=loadTrades(k), g=(loadJ(k).grade)|0;
     let sum=0; tr.forEach(t=>sum+=t.pnl);
     let c="cell"; if(k===tk)c+=" today"; if(k===selDate)c+=" sel"; if(k>tk)c+=" fut";
+    if(hasEntry(k))c+=" hasj";
     h+='<div class="'+c+'" data-day="'+k+'"><span>'+d+'</span>'+
       (tr.length?'<span class="cs '+(sum>=0?"pos":"neg")+'">'+tr.length+'T '+fmtPnl(sum)+'</span>':"")+
       (g?'<span class="cs st">'+"★".repeat(g)+"☆".repeat(5-g)+'</span>':"")+'</div>';
@@ -1252,9 +1268,21 @@ function renderDetail(){
   ).join(""):'<div class="tnone">No trades logged — add the day\u2019s results below (manual P&amp;L).</div>';
   $("#tTotal").textContent=tr.length?("TOTAL "+fmtPnl(sum)+" · "+tr.length+" TRADE"+(tr.length>1?"S":"")):"";
   renderStars();
-  $("#calCapture").innerHTML=captureHTML(d,j,STAGES_CAL);
-  refreshThumbsAll(d);
+  renderCalJournal(d);
   $("#jBetter").value=j.better||"";
+}
+/* Per-trade Trade Journal in the Calendar day view (any day; view + upload/re-upload). */
+function renderCalJournal(d){
+  const jt=loadJT(d);
+  const n=Math.max(jt.length,1);
+  let html="";
+  for(let i=0;i<n;i++){
+    html+='<div class="tj"><div class="tjhd"><span>TRADE '+(i+1)+'</span>'+
+      ((i===n-1&&n>1)?'<button class="tjrm" data-tjrm="'+i+'">remove last</button>':'')+
+      '</div><div class="caprow">'+captureTradeHTML(d,i,jt[i]||{})+'</div></div>';
+  }
+  $("#calJournal").innerHTML=html;
+  for(let i=0;i<n;i++)refreshThumbsTradeAll(d,i);
 }
 function initCalendar(d){
   selDate=d;
@@ -1293,14 +1321,16 @@ function renderFeed(){
   $("#calFeed").innerHTML=html;
   $$("[data-fcthumbs]").forEach(el=>{
     const date=el.dataset.fcthumbs;
-    const keys=STAGES_CAL.filter(s=>idx[date+":"+s.id+":photo"]).map(s=>date+":"+s.id+":photo");
+    const dayKeys=STAGES_CAL.filter(s=>idx[date+":"+s.id+":photo"]).map(s=>date+":"+s.id+":photo");
+    const trKeys=Object.keys(idx).filter(k=>k.indexOf(date+":t")===0&&k.endsWith(":photo")).sort();
+    const keys=dayKeys.concat(trKeys);
     if(!keys.length)return;
     Promise.all(keys.map(kp=>idbGet(kp).then(ph=>({kp,ph}))))
       .then(results=>{
         let th="";
         results.forEach(({kp,ph})=>{
           if(ph&&ph.blob){
-            th+='<img src="'+objURL(kp,ph.blob)+'" data-lb>';
+            th+='<img src="'+objURL(kp,ph.blob)+'" data-lb data-lbkey="'+escA(kp)+'">';
           }
         });
         el.innerHTML=th;
@@ -1339,6 +1369,22 @@ $("#dayStars").addEventListener("click",e=>{
   saveJ(selDate,j); renderStars(); renderCal();
 });
 $("#jBetter").addEventListener("input",()=>{const j=loadJ(selDate); j.better=$("#jBetter").value; saveJ(selDate,j); renderCal();});
+$("#calAddTrade").addEventListener("click",()=>{
+  const jt=loadJT(selDate); jt.push({}); saveJT(selDate,jt);
+  renderCalJournal(selDate); renderCal();
+});
+$("#calJournal").addEventListener("click",e=>{
+  const b=e.target.closest("[data-tjrm]"); if(!b)return;
+  const i=+b.dataset.tjrm;
+  STAGES.forEach(s=>{
+    const kp=selDate+":t"+i+":"+s.id+":photo";
+    idbDel(kp).then(()=>idxDel(kp));
+    if(urlCache[kp]){URL.revokeObjectURL(urlCache[kp]);delete urlCache[kp];}
+  });
+  const jt=loadJT(selDate); jt.splice(i,1); saveJT(selDate,jt);
+  renderCalJournal(selDate); renderCal();
+  if(calViewMode==="feed")renderFeed();
+});
 $("#calGrid").addEventListener("click",e=>{
   const c=e.target.closest("[data-day]"); if(!c)return;
   selDate=c.dataset.day; renderCal(); renderDetail();
@@ -1405,6 +1451,21 @@ function lbZoomAt(fx,fy,newS){
   lb.s=newS; lbClamp();
   lb.x=cx-lb.s*dx; lb.y=cy-lb.s*dy;
   lbApply();
+}
+/* Caption for a journal screenshot in the lightbox: trade/stage label + the note. */
+function journalCaption(kp){
+  const p=kp.split(":");
+  let label="", note="";
+  if(p[1]&&p[1][0]==="t"){
+    const date=p[0], ti=+p[1].slice(1), stage=p[2];
+    const jt=loadJT(date); const rec=(jt[ti]&&jt[ti][stage])||{};
+    note=rec.note||""; label="TRADE "+(ti+1)+" · "+stage.toUpperCase()+" · "+date;
+  }else{
+    const date=p[0], stage=p[1];
+    const j=loadJ(date); note=((j[stage]&&j[stage].note)||"");
+    label=stage.toUpperCase()+" · "+date;
+  }
+  return "<h3>"+escH(label)+"</h3>"+(note.trim()?"<p>"+escH(note)+"</p>":"<p class='lb-empty'>No note written for this stage yet.</p>");
 }
 function getModelText(img){
   const model=img.closest(".model");
