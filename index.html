@@ -283,6 +283,11 @@ details .body i{color:var(--text-3)}
 #quoteCard{margin:10px 0}
 #quoteCard .qlbl{font-family:var(--serif);font-size:10px;letter-spacing:2px;color:var(--text-3);margin-bottom:6px}
 #quoteText{font-family:var(--serif);font-style:italic;font-size:14.5px;line-height:1.55;color:var(--text);margin-bottom:6px}
+#quoteCard{position:relative}
+#quoteShare{position:absolute;top:9px;right:10px;font-family:var(--serif);font-size:10.5px;letter-spacing:1.5px;color:var(--crimson);background:rgba(224,18,43,.07);border:1px solid rgba(224,18,43,.35);border-radius:7px;padding:5px 10px;cursor:pointer;transition:background .2s,box-shadow .2s}
+#quoteShare::before{content:"\25C8 ";opacity:.85}
+#quoteShare:hover{background:rgba(224,18,43,.16);box-shadow:0 0 12px rgba(224,18,43,.25)}
+@media(max-width:420px){#quoteShare{font-size:9.5px;padding:4px 8px;top:7px;right:8px}}
 #quoteSrc{font-family:var(--serif);font-size:11.5px;letter-spacing:1px;color:var(--crimson);text-shadow:0 0 10px rgba(224,18,43,.3)}
 @media (max-width:760px){.chkgrid{grid-template-columns:1fr;gap:4px}#grpA{columns:2;column-gap:8px}#grpB{columns:2;column-gap:8px}#tab-checklist.editing #grpA,#grpB.editing{columns:1}.phil{grid-template-columns:1fr}.model{grid-template-columns:1fr}.gal img{max-height:220px}#lbIG{flex-direction:column}.lb-text{flex:1;max-width:none;border-right:none;border-top:1px solid var(--line);order:2;padding:16px 16px 24px}.lb-img{flex:0 0 48vh;order:1;border-bottom:1px solid var(--line)}}
 @media (max-width:640px){.frow{grid-template-columns:1fr}.caprow{grid-template-columns:1fr}.tadd{grid-template-columns:1fr 1fr}}
@@ -329,6 +334,7 @@ details .body i{color:var(--text-3)}
     <div class="qlbl" data-i18n="quoteLabel">QUOTE OF THE DAY</div>
     <div id="quoteText">—</div>
     <div id="quoteSrc">—</div>
+    <button id="quoteShare" type="button">SHARE</button>
   </div>
 
   <div class="clockwrap">
@@ -931,6 +937,8 @@ const TL={
 "Bank the process; the payout follows.":{es:"Cobra el proceso; la recompensa vendrá después.",zh:"先赚到过程，回报自会随之而来。",fr:"Capitalise le processus ; le gain suivra.",ar:"اجنِ العملية؛ والمكافأة تتبع."},
 "The first mouse gets trapped; the second gets the cheese.":{es:"El primer ratón cae en la trampa; el segundo se lleva el queso.",zh:"第一只老鼠被夹住，第二只才吃到奶酪。",fr:"La première souris se fait piéger ; la seconde a le fromage.",ar:"الفأر الأول يقع في الفخّ؛ والثاني ينال الجبن."},
 "Stack the confluences; let probability do the work.":{es:"Apila las confluencias; deja que la probabilidad haga el trabajo.",zh:"叠加汇合点，让概率替你做事。",fr:"Empile les confluences ; laisse la probabilité faire le travail.",ar:"كدّس التوافقات، ودع الاحتمالية تقوم بالعمل."}
+,
+"SHARE":{es:"COMPARTIR",zh:"分享",fr:"PARTAGER",ar:"مشاركة"}
 };
 function _loc(){return {en:"en-US",es:"es-ES",zh:"zh-CN",fr:"fr-FR",ar:"ar"}[curLang]||"en-US";}
 let curLang=(function(){try{return localStorage.getItem("anbu_lang")||"en";}catch(e){return "en";}})();
@@ -1942,6 +1950,8 @@ document.addEventListener("keydown",e=>{
 });
 /* ---- Combine a trade's before/during/after into ONE shareable card ---- */
 function blobToImg(blob){return new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=URL.createObjectURL(blob);});}
+(function(){var b=document.getElementById("quoteShare");
+  if(b)b.addEventListener("click",function(){try{buildQuoteCard();}catch(e){}});})();
 function wrapLines(ctx,text,maxW){
   const words=String(text).replace(/\s+/g," ").trim().split(" ");
   const lines=[]; let line="";
@@ -1951,6 +1961,162 @@ function wrapLines(ctx,text,maxW){
   }
   if(line)lines.push(line);
   return lines;
+}
+function buildQuoteCard(){
+  var cv=document.createElement("canvas");
+  var W=1080, H=1350, pad=64;
+  cv.width=W; cv.height=H;
+  var ctx=cv.getContext("2d");
+  var F_SERIF="'Georgia',serif";
+  var F_SANS="system-ui,-apple-system,'Segoe UI',Arial,sans-serif";
+
+  // 1. Background
+  ctx.fillStyle="#0b0708";
+  ctx.fillRect(0,0,W,H);
+  var rg=ctx.createRadialGradient(W/2,H*0.50,60,W/2,H*0.50,W*0.95);
+  rg.addColorStop(0,"rgba(224,18,43,0.18)");
+  rg.addColorStop(1,"rgba(224,18,43,0)");
+  ctx.fillStyle=rg;
+  ctx.fillRect(0,0,W,H);
+
+  // 2. Sharingan watermark (centered at W/2, H*0.44, size 780)
+  var size=780;
+  ctx.save();
+  ctx.globalAlpha=0.20;
+  ctx.translate(W/2, H*0.50);
+  ctx.scale(size/300, size/300);
+  ctx.translate(-150, -150);
+
+  // outer circle
+  var outerGrad=ctx.createRadialGradient(150,150,0,150,150,145);
+  outerGrad.addColorStop(0,"#660000");
+  outerGrad.addColorStop(0.6,"#c30000");
+  outerGrad.addColorStop(1,"#a00000");
+  ctx.beginPath();
+  ctx.arc(150,150,145,0,2*Math.PI);
+  ctx.fillStyle=outerGrad;
+  ctx.fill();
+  ctx.strokeStyle="#000";
+  ctx.lineWidth=10;
+  ctx.stroke();
+
+  // ring
+  ctx.globalAlpha=0.06;
+  ctx.beginPath();
+  ctx.arc(150,150,90,0,2*Math.PI);
+  ctx.strokeStyle="#000";
+  ctx.lineWidth=4;
+  ctx.stroke();
+  ctx.globalAlpha=0.20; // restore for subsequent
+
+  // tomoe (three rotations)
+  function drawTomoe(){
+    ctx.beginPath();
+    ctx.arc(60,150,20,0,2*Math.PI);
+    ctx.fillStyle="#000";
+    ctx.fill();
+    var tomoe=new Path2D("M 60,170 59.4,152.9 C 43.9,152.9 28.7,154.1 18.8,133.3 22.4,156 32.8,170 60,170 z");
+    ctx.fill(tomoe);
+  }
+  // 0 deg
+  drawTomoe();
+  // 120 deg
+  ctx.save();
+  ctx.translate(150,150);
+  ctx.rotate(2*Math.PI/3);
+  ctx.translate(-150,-150);
+  drawTomoe();
+  ctx.restore();
+  // -120 deg (240 deg)
+  ctx.save();
+  ctx.translate(150,150);
+  ctx.rotate(4*Math.PI/3);
+  ctx.translate(-150,-150);
+  drawTomoe();
+  ctx.restore();
+
+  // pupil
+  ctx.beginPath();
+  ctx.arc(150,150,25,0,2*Math.PI);
+  ctx.fillStyle="#000";
+  ctx.fill();
+
+  ctx.restore(); // restore globalAlpha and transform
+  ctx.globalAlpha=1.0;
+
+  // 3. Header
+  ctx.textAlign="left";
+  ctx.textBaseline="top";
+  var uname=(typeof getUser==="function")?getUser():"";
+  var brand="ANBU · TIME & PRICE"+(uname?" — "+uname.toUpperCase():"");
+  ctx.font="bold 40px "+F_SERIF;
+  if(ctx.measureText(brand).width>W-2*pad-340)ctx.font="bold 30px "+F_SERIF;
+  ctx.fillStyle="#f0eaeb";
+  ctx.fillText(brand, pad, pad);
+
+  ctx.textAlign="right";
+  ctx.font="italic 19px "+F_SERIF;
+  ctx.fillStyle="#f0eaeb";
+  ctx.fillText(TR("There are no shortcuts to riches."), W-pad, pad+2);
+  ctx.fillStyle="#e0122b";
+  ctx.fillText(TR("Stay disciplined to your system."), W-pad, pad+2+26);
+  ctx.textAlign="left";
+
+  // 4. Quote of the day
+  var p=nyParts();
+  var q=QUOTES[dayOfYear(p)%QUOTES.length];
+  var quoteText=TR(q.t);
+  var maxWidth=W-2*pad-80;
+  var fontSize=62;
+  var lines, lineHeight;
+  while(fontSize>=26){
+    ctx.font="italic "+fontSize+"px "+F_SERIF;
+    lines=wrapLines(ctx, quoteText, maxWidth);
+    if(lines.length<=6) break;
+    fontSize-=4;
+  }
+  if(fontSize<26) fontSize=26;
+  ctx.font="italic "+fontSize+"px "+F_SERIF;
+  lineHeight=Math.round(fontSize*1.32);
+  var attrGap=56, attrH=30;
+  var blockH=lines.length*lineHeight + attrGap + attrH;
+  var startY=H*0.50 - blockH/2;
+  ctx.textAlign="center";
+  ctx.fillStyle="#f0eaeb";
+  for(var i=0;i<lines.length;i++){
+    ctx.fillText(lines[i], W/2, startY + i*lineHeight);
+  }
+
+  // 5. Attribution
+  var attrY=startY + lines.length*lineHeight + 56;
+  ctx.font="italic 30px "+F_SERIF;
+  ctx.fillStyle="#e0122b";
+  ctx.fillText("— " + q.s, W/2, attrY);
+
+  // 6. Footer
+  var dateStr=p.y+"-"+("0"+p.mo).slice(-2)+"-"+("0"+p.d).slice(-2);
+  ctx.textBaseline="alphabetic";
+  ctx.font="20px "+F_SANS;
+  ctx.fillStyle="#8a7a7d";
+  ctx.textAlign="left";
+  ctx.fillText(dateStr, pad, H-pad);
+  ctx.textAlign="right";
+  ctx.fillText(TR("QUOTE OF THE DAY"), W-pad, H-pad);
+  ctx.textAlign="left";
+
+  // 7. Finish
+  cv.toBlob(function(blob){
+    if(cardURL)URL.revokeObjectURL(cardURL);
+    cardURL=URL.createObjectURL(blob);
+    cardName="ANBU_quote_"+dateStr+".png";
+    $("#cardImg").src=cardURL;
+    $("#cardTitle").textContent=TR("QUOTE OF THE DAY");
+    $("#cardModal").classList.add("on");
+    $("#cardPrev").style.display="none";
+    $("#cardNext").style.display="none";
+    cardCtx={quote:true,n:1};
+  },"image/png");
+  return true;
 }
 async function buildTradeCard(date,ti,quiet){
   const jt=loadJT(date), rec=jt[ti]||{};
