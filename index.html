@@ -43,6 +43,7 @@ body[data-macro="killzone"] .sharingan-wrap .spin{animation:spin 6s linear infin
 @keyframes ignitePulse{0%,100%{filter:drop-shadow(0 0 20px var(--glow)) drop-shadow(0 0 60px rgba(224,18,43,.3))}50%{filter:drop-shadow(0 0 40px var(--glow)) drop-shadow(0 0 100px rgba(224,18,43,.5))}}
 @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){.sharingan-wrap .spin,body[data-macro="killzone"] .sharingan-wrap{animation:none!important}}
+header.top h1 #userTag{font-size:.55em;color:var(--crimson);cursor:pointer;letter-spacing:1.5px;text-shadow:0 0 10px var(--glow)}
 .wrap{max-width:var(--w);margin:0 auto;position:relative;z-index:1}
 header.top{display:flex;align-items:center;gap:10px;padding:14px 2px 8px;flex-wrap:wrap}
 header.top .ak{width:11px;height:11px;border-radius:50%;background:var(--crimson);box-shadow:0 0 12px var(--glow),0 0 26px rgba(224,18,43,.5);flex:0 0 11px}
@@ -290,7 +291,7 @@ details .body i{color:var(--text-3)}
 
 <header class="top">
   <div class="ak"></div>
-  <h1>ANBU <span>·</span> TIME &amp; PRICE</h1>
+  <h1>ANBU <span>·</span> TIME &amp; PRICE <span id="userTag" title="tap to change your name"></span></h1>
   <div class="creed"><span class="c1">There are no shortcuts to riches.</span><br><span class="c2">Stay disciplined to your system.</span></div>
 </header>
 
@@ -1092,7 +1093,8 @@ $("#aplusNew").addEventListener("click",()=>{
 const STAGES=[
  {id:"before", tag:"BEFORE", ph:"improvement / note — bias, DOL, plan"},
  {id:"during", tag:"DURING", ph:"improvement / note — setup, entry, emotion"},
- {id:"after",  tag:"AFTER",  ph:"improvement / note — result, lesson"}
+ {id:"after",  tag:"AFTER",  ph:"improvement / note — result, lesson"},
+ {id:"pnl",    tag:"P&L",    ph:"optional — P&L / result note"}
 ];
 const STAGES_CAL=[
  {id:"before", tag:"BEFORE", ph:"market before the session — e.g. the 9:30 open"},
@@ -1311,7 +1313,7 @@ function renderCalJournal(d){
     html+='<div class="tj"><div class="tjhd"><span>TRADE '+(i+1)+'</span>'+
       ((i===n-1&&n>1)?'<button class="tjrm" data-tjrm="'+i+'">remove last</button>':'')+
       '</div><div class="caprow">'+captureTradeHTML(d,i,jt[i]||{})+'</div>'+
-      '<button class="btn mkcard" data-mkcard="'+i+'">🖼 COMBINE INTO ONE IMAGE (before · during · after)</button></div>';
+      '<button class="btn mkcard" data-mkcard="'+i+'">🖼 COMBINE INTO ONE IMAGE (before · during · after · P&L)</button></div>';
   }
   $("#calJournal").innerHTML=html;
   for(let i=0;i<n;i++)refreshThumbsTradeAll(d,i);
@@ -1572,7 +1574,7 @@ function wrapLines(ctx,text,maxW){
 }
 async function buildTradeCard(date,ti){
   const jt=loadJT(date), rec=jt[ti]||{};
-  const STG=[["before","BEFORE"],["during","DURING"],["after","AFTER"]];
+  const STG=[["before","BEFORE"],["during","DURING"],["after","AFTER"],["pnl","P&L"]];
   const items=[];
   for(const [id,label] of STG){
     const note=((rec[id]&&rec[id].note)||"").trim();
@@ -1606,8 +1608,15 @@ async function buildTradeCard(date,ti){
   x.fillStyle=rg;x.fillRect(0,0,W,H);
   let y=pad;
   x.textBaseline="top";
-  x.fillStyle="#f0eaeb";x.font="bold 40px "+F_SERIF;
-  x.fillText("ANBU · TIME & PRICE",pad,y); y+=52;
+  const uname=getUser();
+  let cardTitle="ANBU · TIME & PRICE"+(uname?" — "+uname.toUpperCase():"");
+  x.font="bold 40px "+F_SERIF;
+  if(x.measureText(cardTitle).width>imgW-340)x.font="bold 30px "+F_SERIF;
+  x.fillStyle="#f0eaeb";x.fillText(cardTitle,pad,y);
+  x.textAlign="right";x.font="italic 19px "+F_SERIF;
+  x.fillStyle="#f0eaeb";x.fillText("There are no shortcuts to riches.",W-pad,y+2);
+  x.fillStyle="#e0122b";x.fillText("Stay disciplined to your system.",W-pad,y+28);
+  x.textAlign="left"; y+=52;
   x.fillStyle="#c83e3e";x.font="italic 22px "+F_SERIF;
   x.fillText("TRADE "+(ti+1)+" · "+date,pad,y); y+=44;
   blocks.forEach(b=>{
@@ -1630,6 +1639,12 @@ async function buildTradeCard(date,ti){
     $("#cardModal").classList.add("on");
   },"image/png");
 }
+function getUser(){try{return (localStorage.getItem("anbu_user")||"KING LEM").trim()||"KING LEM"}catch(e){return "KING LEM"}}
+function renderUserTag(){const el=document.getElementById("userTag");if(el)el.textContent="("+getUser()+")";}
+(function(){const el=document.getElementById("userTag");if(!el)return;
+  el.addEventListener("click",()=>{const v=prompt("Name shown on the header & your trade cards:",getUser());
+    if(v!==null){try{localStorage.setItem("anbu_user",v.trim()||"KING LEM")}catch(e){}renderUserTag();}});
+  renderUserTag();})();
 let cardURL="", cardName="anbu-card.png";
 $("#cardX").addEventListener("click",()=>$("#cardModal").classList.remove("on"));
 $("#cardModal").addEventListener("click",e=>{if(e.target.id==="cardModal")$("#cardModal").classList.remove("on");});
