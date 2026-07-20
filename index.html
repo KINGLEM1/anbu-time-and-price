@@ -236,6 +236,20 @@ details .body i{color:var(--text-3)}
 #zReset{right:14px}
 #zOut{right:60px}
 #zIn{right:106px}
+#lbPrev,#lbNext{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.6);border:1px solid rgba(224,18,43,.5);color:#fff;border-radius:50%;width:52px;height:52px;font-size:30px;line-height:1;cursor:pointer;display:none;align-items:center;justify-content:center;z-index:101;padding-bottom:4px}
+#lbPrev{left:14px}#lbNext{right:14px}
+#lbPrev:active,#lbNext:active{border-color:var(--crimson);background:rgba(224,18,43,.25)}
+#cardModal{position:fixed;inset:0;background:rgba(4,2,3,.97);z-index:110;display:none;flex-direction:column}
+#cardModal.on{display:flex}
+.cardbar{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--line);flex-shrink:0}
+#cardTitle{font-family:var(--serif);letter-spacing:2px;color:var(--crimson);font-size:13px}
+.cardbtns{display:flex;gap:8px}
+#cardSave,#cardX{background:rgba(0,0,0,.7);border:1px solid rgba(224,18,43,.5);color:#fff;border-radius:8px;font-family:var(--mono);font-size:12px;padding:8px 12px;cursor:pointer}
+#cardSave{border-color:var(--crimson);background:rgba(224,18,43,.2)}
+.cardscroll{flex:1;overflow:auto;display:flex;justify-content:center;padding:16px}
+#cardImg{max-width:100%;height:auto;align-self:flex-start;border:1px solid var(--line);border-radius:8px}
+#cardHint{font-family:var(--sans);font-size:11px;color:var(--text-3);text-align:center;padding:8px 16px 14px;flex-shrink:0}
+.mkcard{width:100%;margin-top:2px;font-size:11px;opacity:.92}
 #nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:var(--w);display:grid;grid-template-columns:repeat(4,1fr);background:rgba(10,7,8,.94);border-top:1px solid var(--line);backdrop-filter:blur(10px);padding-bottom:env(safe-area-inset-bottom);z-index:50}
 #nav button{background:none;border:none;color:var(--text-3);padding:8px 4px 9px;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;min-height:56px;font-family:var(--mono);font-size:10px;letter-spacing:1.5px}
 #nav svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
@@ -612,10 +626,21 @@ details .body i{color:var(--text-3)}
   <div class="lb-text" id="lbText"></div>
   <div class="lb-img" id="lbImgPane">
     <img id="lbImg" alt="model screenshot">
+    <button id="lbPrev" title="Previous (←)">‹</button>
+    <button id="lbNext" title="Next (→)">›</button>
     <button id="zIn" title="Zoom in">+</button>
     <button id="zOut" title="Zoom out">−</button>
     <button id="zReset" title="Reset">⟲</button>
   </div>
+</div>
+
+<div id="cardModal">
+  <div class="cardbar">
+    <span id="cardTitle">TRADE CARD</span>
+    <span class="cardbtns"><button id="cardSave">⬇ SAVE IMAGE</button><button id="cardX">CLOSE</button></span>
+  </div>
+  <div class="cardscroll"><img id="cardImg" alt="combined trade card"></div>
+  <div id="cardHint">One image — long-press (phone) or right-click to save, or use SAVE IMAGE.</div>
 </div>
 
 <input type="file" id="filePhoto" accept="image/*" hidden>
@@ -1168,8 +1193,14 @@ document.addEventListener("click",e=>{
       }
     }); return;
   }
+  const mk=e.target.closest("[data-mkcard]");
+  if(mk){buildTradeCard(selDate,+mk.dataset.mkcard); return;}
   const gi=e.target.closest(".gal img,[data-lb]");
-  if(gi){openLB(gi.src, gi.dataset.lbkey?journalCaption(gi.dataset.lbkey):getModelText(gi)); return;}
+  if(gi){
+    if(gi.dataset.lbkey){openLBAt(gi);}
+    else{lbGroup=[];openLB(gi.src,getModelText(gi));updateLBArrows();}
+    return;
+  }
   const fc=e.target.closest("#calFeed [data-day]");
   if(fc){
     selDate=fc.dataset.day;
@@ -1279,7 +1310,8 @@ function renderCalJournal(d){
   for(let i=0;i<n;i++){
     html+='<div class="tj"><div class="tjhd"><span>TRADE '+(i+1)+'</span>'+
       ((i===n-1&&n>1)?'<button class="tjrm" data-tjrm="'+i+'">remove last</button>':'')+
-      '</div><div class="caprow">'+captureTradeHTML(d,i,jt[i]||{})+'</div></div>';
+      '</div><div class="caprow">'+captureTradeHTML(d,i,jt[i]||{})+'</div>'+
+      '<button class="btn mkcard" data-mkcard="'+i+'">🖼 COMBINE INTO ONE IMAGE (before · during · after)</button></div>';
   }
   $("#calJournal").innerHTML=html;
   for(let i=0;i<n;i++)refreshThumbsTradeAll(d,i);
@@ -1496,9 +1528,115 @@ function closeLB(){
   $("#lbIG").classList.remove("on");
   $("#lbImg").src="";
   $("#lbText").innerHTML="";
+  lbGroup=[];
 }
+/* ---- Lightbox group navigation (flip before/during/after with arrows) ---- */
+let lbGroup=[], lbGi=0;
+function updateLBArrows(){
+  const show=lbGroup.length>1?"flex":"none";
+  $("#lbPrev").style.display=show; $("#lbNext").style.display=show;
+}
+function lbShow(i){
+  if(!lbGroup.length)return;
+  lbGi=(i+lbGroup.length)%lbGroup.length;
+  const g=lbGroup[lbGi];
+  openLB(g.src, journalCaption(g.key));
+  updateLBArrows();
+}
+function openLBAt(el){
+  const all=[...$$('img[data-lbkey]')].filter(x=>x.offsetParent!==null);
+  lbGroup=all.map(x=>({src:x.getAttribute("src"),key:x.dataset.lbkey}));
+  lbGi=all.indexOf(el); if(lbGi<0)lbGi=0;
+  lbShow(lbGi);
+}
+$("#lbPrev").addEventListener("click",e=>{e.stopPropagation();lbShow(lbGi-1);});
+$("#lbNext").addEventListener("click",e=>{e.stopPropagation();lbShow(lbGi+1);});
 $("#lbX").addEventListener("click",closeLB);
-document.addEventListener("keydown",e=>{if(e.key==="Escape")closeLB();});
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape"){closeLB();return;}
+  if(!$("#lbIG").classList.contains("on")||lbGroup.length<2)return;
+  if(e.key==="ArrowLeft"){e.preventDefault();lbShow(lbGi-1);}
+  else if(e.key==="ArrowRight"){e.preventDefault();lbShow(lbGi+1);}
+});
+/* ---- Combine a trade's before/during/after into ONE shareable card ---- */
+function blobToImg(blob){return new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=URL.createObjectURL(blob);});}
+function wrapLines(ctx,text,maxW){
+  const words=String(text).replace(/\s+/g," ").trim().split(" ");
+  const lines=[]; let line="";
+  for(const w of words){
+    const t=line?line+" "+w:w;
+    if(ctx.measureText(t).width>maxW&&line){lines.push(line);line=w;}else line=t;
+  }
+  if(line)lines.push(line);
+  return lines;
+}
+async function buildTradeCard(date,ti){
+  const jt=loadJT(date), rec=jt[ti]||{};
+  const STG=[["before","BEFORE"],["during","DURING"],["after","AFTER"]];
+  const items=[];
+  for(const [id,label] of STG){
+    const note=((rec[id]&&rec[id].note)||"").trim();
+    const ph=await idbGet(date+":t"+ti+":"+id+":photo");
+    if((ph&&ph.blob)||note){
+      let img=null; if(ph&&ph.blob){try{img=await blobToImg(ph.blob);}catch(e){img=null;}}
+      items.push({label,note,img});
+    }
+  }
+  const better=((loadJ(date).better)||"").trim();
+  if(!items.length&&!better){alert("Nothing to combine yet — add a screenshot or a note to this trade first.");return;}
+  const W=1080, pad=44, imgW=W-2*pad, gap=30;
+  const F_SERIF="'Georgia',serif", F_SANS="system-ui,-apple-system,'Segoe UI',Arial,sans-serif";
+  const m=document.createElement("canvas").getContext("2d");
+  // measure
+  let H=pad+58/*title*/+30/*creed*/+26;
+  const blocks=items.map(it=>{
+    let bh=34; let noteLines=[];
+    if(it.note){m.font="24px "+F_SANS;noteLines=wrapLines(m,it.note,imgW);bh+=noteLines.length*32+10;}
+    let imgH=0; if(it.img){imgH=Math.round(it.img.naturalHeight*imgW/it.img.naturalWidth);bh+=imgH+10;}
+    return {it,noteLines,imgH,bh:bh+gap};
+  });
+  H+=blocks.reduce((s,b)=>s+b.bh,0);
+  let footerLines=[]; if(better){m.font="24px "+F_SANS;footerLines=wrapLines(m,better,imgW);H+=38+footerLines.length*32;}
+  H+=pad;
+  // draw
+  const cv=document.createElement("canvas");cv.width=W;cv.height=H;const x=cv.getContext("2d");
+  x.fillStyle="#0a0708";x.fillRect(0,0,W,H);
+  const rg=x.createRadialGradient(W/2,120,60,W/2,120,W*0.9);
+  rg.addColorStop(0,"rgba(224,18,43,0.16)");rg.addColorStop(1,"rgba(224,18,43,0)");
+  x.fillStyle=rg;x.fillRect(0,0,W,H);
+  let y=pad;
+  x.textBaseline="top";
+  x.fillStyle="#f0eaeb";x.font="bold 40px "+F_SERIF;
+  x.fillText("ANBU · TIME & PRICE",pad,y); y+=52;
+  x.fillStyle="#c83e3e";x.font="italic 22px "+F_SERIF;
+  x.fillText("TRADE "+(ti+1)+" · "+date,pad,y); y+=44;
+  blocks.forEach(b=>{
+    x.fillStyle="#e0122b";x.font="bold 20px "+F_SERIF;
+    x.fillText(b.it.label,pad,y); y+=32;
+    if(b.noteLines.length){x.fillStyle="#e8ddd6";x.font="24px "+F_SANS;b.noteLines.forEach(l=>{x.fillText(l,pad,y);y+=32;});y+=10;}
+    if(b.it.img){x.drawImage(b.it.img,pad,y,imgW,b.imgH);x.strokeStyle="rgba(224,18,43,0.35)";x.lineWidth=1.5;x.strokeRect(pad,y,imgW,b.imgH);y+=b.imgH+10;}
+    y+=gap;
+  });
+  if(footerLines.length){
+    x.fillStyle="#e0122b";x.font="bold 20px "+F_SERIF;x.fillText("WHAT I COULD HAVE DONE BETTER",pad,y);y+=36;
+    x.fillStyle="#e8ddd6";x.font="24px "+F_SANS;footerLines.forEach(l=>{x.fillText(l,pad,y);y+=32;});
+  }
+  cv.toBlob(blob=>{
+    if(cardURL)URL.revokeObjectURL(cardURL);
+    cardURL=URL.createObjectURL(blob);
+    cardName="ANBU_"+date+"_trade"+(ti+1)+".png";
+    $("#cardImg").src=cardURL;
+    $("#cardTitle").textContent="TRADE "+(ti+1)+" · "+date;
+    $("#cardModal").classList.add("on");
+  },"image/png");
+}
+let cardURL="", cardName="anbu-card.png";
+$("#cardX").addEventListener("click",()=>$("#cardModal").classList.remove("on"));
+$("#cardModal").addEventListener("click",e=>{if(e.target.id==="cardModal")$("#cardModal").classList.remove("on");});
+$("#cardSave").addEventListener("click",()=>{
+  if(!cardURL)return;
+  const a=document.createElement("a");a.href=cardURL;a.download=cardName;document.body.appendChild(a);a.click();a.remove();
+});
 $("#lbIG").addEventListener("click",e=>{
   if(e.target.id==="lbIG"||(e.target.id==="lbImgPane"&&!lbMoved))closeLB();
 });
