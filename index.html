@@ -60,7 +60,7 @@ header.top h1 span{color:var(--crimson)}
 header.top .creed{margin-left:auto;text-align:right;font-family:var(--serif);font-style:italic;font-size:17.5px;line-height:1.5;letter-spacing:.6px;text-shadow:0 0 14px rgba(224,18,43,.35)}
 header.top .creed .c1{color:#f4d3d6}
 header.top .creed .c2{color:var(--crimson);font-style:normal;text-shadow:0 0 12px var(--glow)}
-#langSw{display:flex;gap:3px;align-items:center}
+#langSw{display:flex;gap:3px;align-items:center;flex-basis:100%;justify-content:flex-end}
 #langSw button{background:rgba(0,0,0,.35);border:1px solid var(--line);color:var(--text-3);font-family:var(--mono);font-size:10.5px;padding:3px 6px;border-radius:6px;cursor:pointer;line-height:1}
 #langSw button.on{border-color:var(--crimson);color:#fff;background:rgba(224,18,43,.25)}
 body.widgetmode #langSw{display:none!important}
@@ -315,8 +315,8 @@ details .body i{color:var(--text-3)}
 <div class="wrap">
 
 <header class="top">
-  <div class="ak"></div>
   <div id="langSw"><button data-lang="en">EN</button><button data-lang="es">ES</button><button data-lang="zh">中文</button><button data-lang="fr">FR</button></div>
+  <div class="ak"></div>
   <h1>ANBU <span>·</span> TIME &amp; PRICE <span id="userTag" title="tap to change your name"></span></h1>
   <div class="creed"><span class="c1" data-i18n="creed1">There are no shortcuts to riches.</span><br><span class="c2" data-i18n="creed2">Stay disciplined to your system.</span></div>
 </header>
@@ -685,41 +685,140 @@ const $=s=>document.querySelector(s), $$=s=>document.querySelectorAll(s);
    Only the app chrome is translated. Trading instructions + the Manual stay
    English (precise execution terms; browsers auto-translate that prose well).
    Elements carry data-i18n / data-i18n-ph; anything untagged simply stays English. */
-const I18N={
- en:{"nav.clock":"CLOCK","nav.checklist":"CHECKLIST","nav.calendar":"CALENDAR","nav.manual":"MANUAL",
-  "creed1":"There are no shortcuts to riches.","creed2":"Stay disciplined to your system.",
-  "quoteLabel":"QUOTE OF THE DAY","clockLabel":"NEW YORK · ET","probStack":"PROBABILITY STACK",
-  "macroWheel":"MACRO WHEEL — TIME ANCHORS","f.kz":"Kill Zone","f.mc":"Macro Window","f.4h":"4H Candle Open",
-  "starGrade":"STAR GRADE — RULES / CHECKLIST FOLLOWED","betterLabel":"WHAT I COULD HAVE DONE BETTER",
-  "grid":"GRID","feed":"FEED","add":"ADD","langLabel":"Language"},
- es:{"nav.clock":"RELOJ","nav.checklist":"LISTA","nav.calendar":"CALENDARIO","nav.manual":"MANUAL",
-  "creed1":"No hay atajos hacia la riqueza.","creed2":"Mantén la disciplina en tu sistema.",
-  "quoteLabel":"FRASE DEL DÍA","clockLabel":"NUEVA YORK · ET","probStack":"PILA DE PROBABILIDAD",
-  "macroWheel":"RUEDA MACRO — ANCLAS DE TIEMPO","f.kz":"Zona Kill","f.mc":"Ventana Macro","f.4h":"Apertura Vela 4H",
-  "starGrade":"CALIFICACIÓN — REGLAS / LISTA CUMPLIDA","betterLabel":"QUÉ PUDE HABER HECHO MEJOR",
-  "grid":"CUADRÍCULA","feed":"MURO","add":"AÑADIR","langLabel":"Idioma"},
- zh:{"nav.clock":"时钟","nav.checklist":"清单","nav.calendar":"日历","nav.manual":"手册",
-  "creed1":"致富没有捷径。","creed2":"严守你的系统纪律。",
-  "quoteLabel":"每日格言","clockLabel":"纽约 · ET","probStack":"概率叠加",
-  "macroWheel":"宏观时轮 — 时间锚点","f.kz":"关键时段","f.mc":"宏观窗口","f.4h":"4小时K线开盘",
-  "starGrade":"星级评分 — 遵守规则/清单","betterLabel":"我本可以做得更好的地方",
-  "grid":"网格","feed":"动态","add":"添加","langLabel":"语言"},
- fr:{"nav.clock":"HORLOGE","nav.checklist":"CHECKLIST","nav.calendar":"CALENDRIER","nav.manual":"MANUEL",
-  "creed1":"Il n'y a pas de raccourci vers la richesse.","creed2":"Reste discipliné envers ton système.",
-  "quoteLabel":"CITATION DU JOUR","clockLabel":"NEW YORK · ET","probStack":"PILE DE PROBABILITÉ",
-  "macroWheel":"ROUE MACRO — ANCRAGES TEMPORELS","f.kz":"Kill Zone","f.mc":"Fenêtre Macro","f.4h":"Ouverture Bougie 4H",
-  "starGrade":"NOTE — RÈGLES / CHECKLIST SUIVIE","betterLabel":"CE QUE J'AURAIS PU MIEUX FAIRE",
-  "grid":"GRILLE","feed":"FIL","add":"AJOUTER","langLabel":"Langue"}
+/* Translation table keyed by the EXACT English string. A DOM walker (below) swaps
+   any match anywhere in the operable UI (static or dynamically-rendered); the whole
+   Manual tab + the language switcher are skipped, and any string NOT in this table
+   simply stays English. Add a key here to extend coverage — no per-element wiring. */
+const TL={
+ "CLOCK":{es:"RELOJ",zh:"时钟",fr:"HORLOGE"},
+ "CHECKLIST":{es:"LISTA",zh:"清单",fr:"CHECKLIST"},
+ "CALENDAR":{es:"CALENDARIO",zh:"日历",fr:"CALENDRIER"},
+ "MANUAL":{es:"MANUAL",zh:"手册",fr:"MANUEL"},
+ "There are no shortcuts to riches.":{es:"No hay atajos hacia la riqueza.",zh:"致富没有捷径。",fr:"Il n'y a pas de raccourci vers la richesse."},
+ "Stay disciplined to your system.":{es:"Mantén la disciplina en tu sistema.",zh:"严守你的系统纪律。",fr:"Reste discipliné envers ton système."},
+ "QUOTE OF THE DAY":{es:"FRASE DEL DÍA",zh:"每日格言",fr:"CITATION DU JOUR"},
+ "NEW YORK · ET":{es:"NUEVA YORK · ET",zh:"纽约 · ET",fr:"NEW YORK · ET"},
+ "PROBABILITY STACK":{es:"PILA DE PROBABILIDAD",zh:"概率叠加",fr:"PILE DE PROBABILITÉ"},
+ "MACRO WHEEL — TIME ANCHORS":{es:"RUEDA MACRO — ANCLAS DE TIEMPO",zh:"宏观时轮 — 时间锚点",fr:"ROUE MACRO — ANCRAGES TEMPORELS"},
+ "Kill Zone":{es:"Zona Kill",zh:"关键时段",fr:"Kill Zone"},
+ "Macro Window":{es:"Ventana Macro",zh:"宏观窗口",fr:"Fenêtre Macro"},
+ "4H Candle Open":{es:"Apertura Vela 4H",zh:"4小时K线开盘",fr:"Ouverture Bougie 4H"},
+ "WAIT":{es:"ESPERA",zh:"等待",fr:"ATTENTE"},
+ "ACTIVE":{es:"ACTIVO",zh:"激活",fr:"ACTIF"},
+ "xx:50–xx:09 — first / last 10 min of every 1H candle":{es:"xx:50–xx:09 — primeros / últimos 10 min de cada vela 1H",zh:"xx:50–xx:09 — 每根1小时K线的前/后10分钟",fr:"xx:50–xx:09 — 10 premières / dernières min de chaque bougie 1H"},
+ "TIME ANCHORS & 4H OPENS":{es:"ANCLAS DE TIEMPO Y APERTURAS 4H",zh:"时间锚点与4H开盘",fr:"ANCRAGES TEMPORELS ET OUVERTURES 4H"},
+ "4H Candle Open — tradeable anchor":{es:"Apertura Vela 4H — ancla operable",zh:"4小时K线开盘 — 可交易锚点",fr:"Ouverture Bougie 4H — ancrage tradable"},
+ "Midnight — opening-price anchor":{es:"Medianoche — ancla de precio de apertura",zh:"午夜 — 开盘价锚点",fr:"Minuit — ancrage du prix d'ouverture"},
+ "9:50 Macro — 10:00 reversal may begin":{es:"Macro 9:50 — el reversal de 10:00 puede comenzar",zh:"9:50 宏观 — 10:00反转可能开始",fr:"Macro 9:50 — le reversal de 10:00 peut débuter"},
+ "WHAT I COULD HAVE DONE BETTER":{es:"QUÉ PUDE HABER HECHO MEJOR",zh:"我本可以做得更好的地方",fr:"CE QUE J'AURAIS PU MIEUX FAIRE"},
+ "GRID":{es:"CUADRÍCULA",zh:"网格",fr:"GRILLE"},
+ "FEED":{es:"MURO",zh:"动态",fr:"FIL"},
+ "ADD":{es:"AÑADIR",zh:"添加",fr:"AJOUTER"},
+ "EDIT":{es:"EDITAR",zh:"编辑",fr:"MODIFIER"},
+ "RESET":{es:"REINICIAR",zh:"重置",fr:"RÉINIT."},
+ "STAR GRADE — RULES / CHECKLIST FOLLOWED":{es:"CALIFICACIÓN — REGLAS / LISTA CUMPLIDA",zh:"星级评分 — 遵守规则/清单",fr:"NOTE — RÈGLES / CHECKLIST SUIVIE"},
+ "+ ADD A TRADE TO THIS DAY":{es:"+ AÑADIR UNA OPERACIÓN A ESTE DÍA",zh:"+ 为这一天添加一笔交易",fr:"+ AJOUTER UN TRADE À CE JOUR"},
+ "📷 PHOTO":{es:"📷 FOTO",zh:"📷 照片",fr:"📷 PHOTO"},
+ "🖼 COMBINE INTO ONE IMAGE (before · during · after · P&L)":{es:"🖼 COMBINAR EN UNA IMAGEN (antes · durante · después · P&L)",zh:"🖼 合并为一张图片（之前 · 期间 · 之后 · 盈亏）",fr:"🖼 COMBINER EN UNE IMAGE (avant · pendant · après · P&L)"},
+ "＋ NEXT TRADE":{es:"＋ SIGUIENTE OPERACIÓN",zh:"＋ 下一笔交易",fr:"＋ TRADE SUIVANT"},
+ "No trades logged — add the day’s results below (manual P&L).":{es:"Sin operaciones registradas — añade los resultados del día abajo (P&L manual).",zh:"暂无交易记录 — 在下方添加当天的结果（手动盈亏）。",fr:"Aucun trade enregistré — ajoute les résultats du jour ci-dessous (P&L manuel)."},
+ "BEFORE":{es:"ANTES",zh:"之前",fr:"AVANT"},
+ "DURING":{es:"DURANTE",zh:"期间",fr:"PENDANT"},
+ "AFTER":{es:"DESPUÉS",zh:"之后",fr:"APRÈS"},
+ "STREAK":{es:"RACHA",zh:"连胜",fr:"SÉRIE"},
+ "BEST":{es:"MEJOR",zh:"最佳",fr:"MEILLEUR"},
+ "DAY COMPLETE — DISCIPLINE KEPT":{es:"DÍA COMPLETO — DISCIPLINA MANTENIDA",zh:"当日完成 — 已守纪律",fr:"JOURNÉE TERMINÉE — DISCIPLINE TENUE"},
+ "A+ 5-PART CHECKLIST":{es:"LISTA A+ DE 5 PARTES",zh:"A+ 五部分清单",fr:"CHECKLIST A+ EN 5 POINTS"},
+ "A+ SETUP":{es:"SETUP A+",zh:"A+ 设置",fr:"SETUP A+"},
+ "DAILY DISCIPLINE — END OF DAY":{es:"DISCIPLINA DIARIA — FIN DEL DÍA",zh:"每日纪律 — 收盘总结",fr:"DISCIPLINE QUOTIDIENNE — FIN DE JOURNÉE"},
+ "TRADE JOURNAL —":{es:"DIARIO DE OPERACIONES —",zh:"交易日志 —",fr:"JOURNAL DES TRADES —"},
+ "ICT CONCEPTS ↗":{es:"CONCEPTOS ICT ↗",zh:"ICT 概念 ↗",fr:"CONCEPTS ICT ↗"},
+ "Honest review — one thing, written plainly.":{es:"Reseña honesta — una cosa, escrita con claridad.",zh:"诚实复盘 — 一件事，如实写下。",fr:"Bilan honnête — une chose, écrite simplement."},
+ "improvement / note — bias, DOL, plan":{es:"mejora / nota — sesgo, DOL, plan",zh:"改进 / 笔记 — 偏向, DOL, 计划",fr:"amélioration / note — biais, DOL, plan"},
+ "improvement / note — setup, entry, emotion":{es:"mejora / nota — setup, entrada, emoción",zh:"改进 / 笔记 — 设置, 入场, 情绪",fr:"amélioration / note — setup, entrée, émotion"},
+ "improvement / note — result, lesson":{es:"mejora / nota — resultado, lección",zh:"改进 / 笔记 — 结果, 教训",fr:"amélioration / note — résultat, leçon"},
+ "note (optional) — model, setup":{es:"nota (opcional) — modelo, setup",zh:"备注（可选）— 模型, 设置",fr:"note (optionnel) — modèle, setup"},
+ "optional — P&L / result note":{es:"opcional — nota de P&L / resultado",zh:"可选 — 盈亏 / 结果备注",fr:"optionnel — note P&L / résultat"},
+ "P&L  e.g. 250 / -120":{es:"P&L  p.ej. 250 / -120",zh:"盈亏  例如 250 / -120",fr:"P&L  p.ex. 250 / -120"},
+ "this trade — e.g. 250 / -120":{es:"esta operación — p.ej. 250 / -120",zh:"本笔交易 — 例如 250 / -120",fr:"ce trade — p.ex. 250 / -120"},
+ "Marked the HTF compass (Weekly/Monthly) + the Daily/4H delivery before the session":{es:"Marqué la brújula HTF (Semanal/Mensual) + la entrega Diaria/4H antes de la sesión",zh:"开盘前标记了HTF指南针（周线/月线）+ 日线/4H的交付",fr:"Marqué la boussole HTF (Hebdo/Mensuel) + la livraison Journalier/4H avant la séance"},
+ "Checked the news calendar — NO FOMC / high-impact release today (true no-trade)":{es:"Revisé el calendario de noticias — SIN FOMC / publicaciones de alto impacto hoy (verdadero no-trade)",zh:"查看了新闻日历 — 今日无FOMC/高影响数据（真正的禁交易日）",fr:"Vérifié le calendrier des news — PAS de FOMC / publication à fort impact aujourd'hui (vrai no-trade)"},
+ "Stacked confluences before entering: model + macro/kill-zone timing + A+ checklist":{es:"Apilé confluencias antes de entrar: modelo + timing macro/kill-zone + lista A+",zh:"入场前叠加共振：模型 + 宏观/关键时段时机 + A+清单",fr:"Empilé les confluences avant d'entrer : modèle + timing macro/kill-zone + checklist A+"},
+ "Did NOT force a trade with confluences missing (no FOMO)":{es:"NO forcé una operación con confluencias ausentes (sin FOMO)",zh:"在共振缺失时没有强行交易（不FOMO）",fr:"N'ai PAS forcé un trade avec des confluences manquantes (pas de FOMO)"},
+ "Kept risk fixed — no over-leverage, no revenge size":{es:"Mantuve el riesgo fijo — sin sobreapalancamiento, sin tamaño de venganza",zh:"保持固定风险 — 不过度杠杆，不报复性加仓",fr:"Gardé le risque fixe — pas de sur-levier, pas de taille de revanche"},
+ "Targeted the RIGHT liquidity (internal = quick scalp; external = 10:00 hold)":{es:"Apunté a la liquidez CORRECTA (interna = scalp rápido; externa = hold de 10:00)",zh:"瞄准正确的流动性（内部=快速剥头皮；外部=10:00持有）",fr:"Ciblé la BONNE liquidité (interne = scalp rapide ; externe = hold 10:00)"},
+ "Stopped once the primary objective was hit — no late-session graveyard":{es:"Paré una vez alcanzado el objetivo principal — sin cementerio de sesión tardía",zh:"主要目标达成后即停止 — 不碰尾盘墓地时段",fr:"Arrêté une fois l'objectif principal atteint — pas de cimetière de fin de séance"},
+ "Journaled: before / during / after photo + note (capture below)":{es:"Registré: foto antes / durante / después + nota (captura abajo)",zh:"已记录：之前/期间/之后照片 + 笔记（在下方捕获）",fr:"Journalisé : photo avant / pendant / après + note (capture ci-dessous)"},
+ "Read the 9:30 manipulation first (narrative), did NOT trade it":{es:"Leí primero la manipulación de 9:30 (narrativa), NO la operé",zh:"先读9:30操纵（叙事），没有交易它",fr:"Lu d'abord la manipulation de 9:30 (narratif), ne l'ai PAS tradée"},
+ "Enforced the time-and-price anchor — 9:00 · 9:30 · 9:50 · 10:00 · 4H open · 6PM · Midnight":{es:"Apliqué el ancla de tiempo-y-precio — 9:00 · 9:30 · 9:50 · 10:00 · apertura 4H · 6PM · Medianoche",zh:"执行时间与价格锚点 — 9:00 · 9:30 · 9:50 · 10:00 · 4H开盘 · 下午6点 · 午夜",fr:"Appliqué l'ancrage temps-et-prix — 9:00 · 9:30 · 9:50 · 10:00 · ouverture 4H · 18h · Minuit"},
+ "Isolate the higher-timeframe Draw on Liquidity":{es:"Aísla el Draw on Liquidity de temporalidad superior",zh:"锁定高周期的流动性目标（DOL）",fr:"Isole le Draw on Liquidity de timeframe supérieur"},
+ "Identify the active daily profile":{es:"Identifica el perfil diario activo",zh:"识别当前的日内画像（AMD）",fr:"Identifie le profil journalier actif"},
+ "Verify institutional manipulation:":{es:"Verifica la manipulación institucional:",zh:"确认机构操纵：",fr:"Vérifie la manipulation institutionnelle :"},
+ "Enforce the time-and-price anchor:":{es:"Aplica el ancla de tiempo-y-precio:",zh:"执行时间与价格锚点：",fr:"Applique l'ancrage temps-et-prix :"},
+ "Confirm the entry trigger":{es:"Confirma el gatillo de entrada",zh:"确认入场触发",fr:"Confirme le déclencheur d'entrée"},
+ "0 of 3 timing factors active — low probability · patience":{es:"0 de 3 factores de timing activos — baja probabilidad · paciencia",zh:"3个时间要素中0个激活 — 低概率 · 耐心",fr:"0 sur 3 facteurs de timing actifs — faible probabilité · patience"},
+ "1 of 3 timing factors active — base probability":{es:"1 de 3 factores de timing activos — probabilidad base",zh:"3个时间要素中1个激活 — 基础概率",fr:"1 sur 3 facteurs de timing actifs — probabilité de base"},
+ "2 of 3 timing factors active — elevated probability":{es:"2 de 3 factores de timing activos — probabilidad elevada",zh:"3个时间要素中2个激活 — 概率升高",fr:"2 sur 3 facteurs de timing actifs — probabilité élevée"},
+ "3 of 3 timing factors active — PEAK STACK · highest probability":{es:"3 de 3 factores de timing activos — PILA MÁXIMA · máxima probabilidad",zh:"3个时间要素全部激活 — 顶级叠加 · 最高概率",fr:"3 sur 3 facteurs de timing actifs — PILE MAXIMALE · probabilité maximale"},
+ "Opening Price — important key level":{es:"Precio de Apertura — nivel clave importante",zh:"开盘价 — 重要关键水平",fr:"Prix d'Ouverture — niveau clé important"},
+ "RTH Open — 9:30 Manipulation / Expansion":{es:"Apertura RTH — Manipulación / Expansión de 9:30",zh:"RTH开盘 — 9:30操纵/扩张",fr:"Ouverture RTH — Manipulation / Expansion de 9:30"},
+ "4H Open — 10:00 Reversal / Continuation":{es:"Apertura 4H — Reversal / Continuación de 10:00",zh:"4H开盘 — 10:00反转/延续",fr:"Ouverture 4H — Reversal / Continuation de 10:00"},
+ "Macro — 10:50–11:10 delivery block":{es:"Macro — bloque de entrega 10:50–11:10",zh:"宏观 — 10:50–11:10 交付区块",fr:"Macro — bloc de livraison 10:50–11:10"},
+ "Macro — 11:50–12:10 backup block (Tier-2)":{es:"Macro — bloque de respaldo 11:50–12:10 (Tier-2)",zh:"宏观 — 11:50–12:10 备用区块（Tier-2）",fr:"Macro — bloc de secours 11:50–12:10 (Tier-2)"},
+ "Macro — 12:50–13:10 delivery block":{es:"Macro — bloque de entrega 12:50–13:10",zh:"宏观 — 12:50–13:10 交付区块",fr:"Macro — bloc de livraison 12:50–13:10"},
+ "6:00 PM — 4H open / price anchor":{es:"6:00 PM — apertura 4H / ancla de precio",zh:"下午6点 — 4H开盘 / 价格锚点",fr:"18h00 — ouverture 4H / ancrage de prix"},
+ "Planned exits — scale out at target / block-end and LEAVE A RUNNER":{es:"Salidas planificadas — escala en el objetivo / fin de bloque y DEJA UN RUNNER",zh:"计划性离场 — 在目标/区块结束处分批止盈并留一个RUNNER",fr:"Sorties planifiées — allège à la cible / fin de bloc et LAISSE UN RUNNER"},
+ "DAY":{es:"DÍA",zh:"日期",fr:"JOUR"},
+ "TODAY":{es:"HOY",zh:"今天",fr:"AUJOURD'HUI"},
+ "TRADE":{es:"OPERACIÓN",zh:"交易",fr:"TRADE"},
+ "TRADE CAPTURE":{es:"CAPTURA DE OPERACIÓN",zh:"交易捕获",fr:"CAPTURE DU TRADE"},
+ "CHECK OFF, THEN UPLOAD (PHOTO + NOTE)":{es:"MARCA, LUEGO SUBE (FOTO + NOTA)",zh:"勾选后上传（照片 + 笔记）",fr:"COCHE, PUIS TÉLÉVERSE (PHOTO + NOTE)"},
+ "The stack is":{es:"La pila es",zh:"这个叠加是",fr:"La pile est"},
+ "not a gate":{es:"no una barrera",zh:"不是门槛",fr:"pas une barrière"},
+ "— you can take a trade outside a macro, and you don't have to take one inside it. Lit factors just mean":{es:"— puedes tomar una operación fuera de una macro, y no tienes que tomar una dentro de ella. Los factores encendidos solo significan",zh:"— 你可以在宏观窗口之外交易，也不必在其内部交易。点亮的要素只是意味着",fr:"— tu peux prendre un trade en dehors d'une macro, et tu n'es pas obligé d'en prendre un à l'intérieur. Les facteurs allumés signifient simplement"},
+ "more probability is on your side":{es:"más probabilidad está de tu lado",zh:"更多概率站在你这边",fr:"plus de probabilité est de ton côté"},
+ ". Stack them; know your odds.":{es:". Apílalos; conoce tus probabilidades.",zh:"。叠加它们；了解你的胜率。",fr:". Empile-les ; connais tes chances."}
 };
+function _loc(){return {en:"en-US",es:"es-ES",zh:"zh-CN",fr:"fr-FR"}[curLang]||"en-US";}
 let curLang=(function(){try{return localStorage.getItem("anbu_lang")||"en";}catch(e){return "en";}})();
-function t(k){return (I18N[curLang]&&I18N[curLang][k])||I18N.en[k]||k;}
-function applyI18n(root){
-  root=root||document;
-  root.querySelectorAll("[data-i18n]").forEach(el=>{el.textContent=t(el.getAttribute("data-i18n"));});
-  root.querySelectorAll("[data-i18n-ph]").forEach(el=>{el.setAttribute("placeholder",t(el.getAttribute("data-i18n-ph")));});
+function TR(en){if(curLang==="en")return en;var e=TL[en];return (e&&e[curLang])||en;}
+const I18N_SKIP="script,style,#tab-manual,#langSw,[data-noi18n]";
+const _tOrig=new WeakMap(), _pOrig=new WeakMap();
+function _skip(node){var el=node.nodeType===3?node.parentElement:node;return !el||!!(el.closest&&el.closest(I18N_SKIP));}
+function _transNode(node){
+  if(_skip(node))return;
+  var rec=_tOrig.get(node);
+  if(!rec){var raw=node.nodeValue||"";var key=raw.trim();if(!key)return;var i=raw.indexOf(key);rec={l:raw.slice(0,i),k:key,t:raw.slice(i+key.length)};_tOrig.set(node,rec);}
+  var out=rec.l+TR(rec.k)+rec.t;
+  if(node.nodeValue!==out)node.nodeValue=out;
 }
+function _transText(root){var w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,null),n,a=[];while(n=w.nextNode())a.push(n);a.forEach(_transNode);}
+function _transPH(root){
+  if(!root.querySelectorAll)return;
+  root.querySelectorAll("[placeholder]").forEach(function(el){
+    if(el.closest&&el.closest(I18N_SKIP))return;
+    var o=_pOrig.get(el);if(o==null){o=el.getAttribute("placeholder")||"";_pOrig.set(el,o);}
+    el.setAttribute("placeholder",TR(o));
+  });
+}
+function applyLang(){_transText(document.body);_transPH(document.body);}
 function updateLangBtns(){$$("#langSw [data-lang]").forEach(b=>b.classList.toggle("on",b.getAttribute("data-lang")===curLang));}
-function setLang(l){curLang=l;try{localStorage.setItem("anbu_lang",l);}catch(e){}document.documentElement.setAttribute("lang",l==="zh"?"zh-Hans":l);applyI18n(document);updateLangBtns();}
+function rerenderLang(){
+  try{typeof initChecklist==="function"&&initChecklist();}catch(e){}
+  try{typeof renderCal==="function"&&renderCal();}catch(e){}
+  try{typeof renderDetail==="function"&&renderDetail();}catch(e){}
+  try{typeof refreshChkUI==="function"&&refreshChkUI();}catch(e){}
+  try{typeof renderCapToday==="function"&&renderCapToday();}catch(e){}
+  try{typeof calViewMode!=="undefined"&&calViewMode==="feed"&&typeof renderFeed==="function"&&renderFeed();}catch(e){}
+}
+function setLang(l){curLang=l;try{localStorage.setItem("anbu_lang",l);}catch(e){}document.documentElement.setAttribute("lang",l==="zh"?"zh-Hans":l);rerenderLang();applyLang();updateLangBtns();}
+/* auto-translate dynamically-rendered content (calendar journal, cards, status lines, etc.) */
+try{new MutationObserver(function(muts){
+  for(var j=0;j<muts.length;j++){var an=muts[j].addedNodes;for(var i=0;i<an.length;i++){var nd=an[i];
+    if(nd.nodeType===3){_transNode(nd);}
+    else if(nd.nodeType===1){if(nd.closest&&nd.closest(I18N_SKIP))continue;_transText(nd);_transPH(nd);}
+  }}
+}).observe(document.body,{childList:true,subtree:true});}catch(e){}
 const pad=n=>String(n).padStart(2,"0");
 const keyOf=(y,m,d)=>y+"-"+pad(m)+"-"+pad(m?d:d);
 const fmtT=min=>pad(Math.floor(min/60))+":"+pad(min%60);
@@ -1049,8 +1148,8 @@ function refreshChkUI(){
   $$(".chk input[type=checkbox][data-grp='a']").forEach(inp=>{inp.checked=!!curState[inp.dataset.id];});
   $$(".chk input[type=checkbox][data-grp='b']").forEach(inp=>{inp.checked=!!daily[inp.dataset.id];});
 
-  $("#chkCount").textContent="A+ "+aCount+"/"+it.a.length+" · TRADE "+(curTrade+1);
-  $("#aplusTrade").textContent="TRADE "+(curTrade+1);
+  $("#chkCount").textContent="A+ "+aCount+"/"+it.a.length+" · "+TR("TRADE")+" "+(curTrade+1);
+  $("#aplusTrade").textContent=TR("TRADE")+" "+(curTrade+1);
   renderAplusStars();
 
   const done=it.b.length>0&&bCount===it.b.length;
@@ -1073,7 +1172,7 @@ function computeStreak(){
 }
 function initChecklist(){
   const p=nyParts();
-  $("#chkDate").textContent="TODAY · "+p.wd.toUpperCase()+" "+pad(p.mo)+"/"+pad(p.d);
+  $("#chkDate").textContent=TR("TODAY")+" · "+p.wd.toUpperCase()+" "+pad(p.mo)+"/"+pad(p.d);
   const aplus=loadAplus();
   curTrade=0;  /* always open on TRADE 1 */
   buildChecklist();
@@ -1244,7 +1343,7 @@ function renderCapToday(){
   if(!jt[curTrade])jt[curTrade]={};
   $("#capToday").innerHTML=captureTradeHTML(d,curTrade,jt[curTrade]);
   refreshThumbsTradeAll(d,curTrade);
-  $("#capTodayHeading").textContent="TRADE CAPTURE — TRADE "+(curTrade+1)+" · CHECK OFF, THEN UPLOAD (PHOTO + NOTE)";
+  $("#capTodayHeading").textContent=TR("TRADE CAPTURE")+" — "+TR("TRADE")+" "+(curTrade+1)+" · "+TR("CHECK OFF, THEN UPLOAD (PHOTO + NOTE)");
 }
 
 let pending=null;
@@ -1367,7 +1466,8 @@ function hasEntry(d){
 }
 function renderCal(){
   const MN=["JANUARY","FEBRUARY","MARCH","APRIL","MAY","JUNE","JULY","AUGUST","SEPTEMBER","OCTOBER","NOVEMBER","DECEMBER"];
-  $("#calMonth").textContent=MN[viewM]+" "+viewY;
+  var _mn;try{_mn=new Date(viewY,viewM,1).toLocaleDateString(_loc(),{month:"long"}).toUpperCase();}catch(e){_mn=MN[viewM];}
+  $("#calMonth").textContent=_mn+" "+viewY;
   const startDay=new Date(viewY,viewM,1).getDay(), dim=new Date(viewY,viewM+1,0).getDate(), tk=todayKey();
   let h='<div class="dn">S</div><div class="dn">M</div><div class="dn">T</div><div class="dn">W</div><div class="dn">T</div><div class="dn">F</div><div class="dn">S</div>';
   for(let i=0;i<startDay;i++)h+='<div class="cell blank"></div>';
@@ -1388,7 +1488,7 @@ function renderStars(){
 }
 function renderDetail(){
   const d=selDate, tr=loadTrades(d), j=loadJ(d);
-  $("#dayTitle").textContent="DAY — "+d+(d===todayKey()?" · TODAY":"");
+  $("#dayTitle").textContent=TR("DAY")+" — "+d+(d===todayKey()?" · "+TR("TODAY"):"");
   $("#capDateLbl").textContent=d;
   let sum=0; tr.forEach(t=>sum+=t.pnl);
   $("#tradeList").innerHTML=tr.length?tr.map((t,i)=>
@@ -1410,7 +1510,7 @@ function renderCalJournal(d){
   for(let i=0;i<n;i++){
     const rec=jt[i]||{};
     const apDone=(apArr[i]&&Object.keys(apArr[i]).length)?Object.keys(apArr[i]).length:null;
-    html+='<div class="tj"><div class="tjhd"><span>TRADE '+(i+1)+
+    html+='<div class="tj"><div class="tjhd"><span>'+TR("TRADE")+' '+(i+1)+
       (apDone!==null?' <span class="tjmeta">A+ '+apDone+'/'+aTotal+'</span>':'')+'</span>'+
       '<span class="tstars" data-tstars="'+i+'">'+tstarsHTML(+(rec.stars||0))+'</span>'+
       ((i===n-1&&n>1)?'<button class="tjrm" data-tjrm="'+i+'">remove last</button>':'')+
@@ -1449,7 +1549,7 @@ function renderFeed(){
     const selClass=k===selDate?" sel":"";
     html+='<div class="feedCard'+selClass+'" data-day="'+k+'">'+
       '<div class="fcTop">'+
-        '<span class="fcDate">'+k+(k===tk?" · TODAY":"")+'</span>'+
+        '<span class="fcDate">'+k+(k===tk?" · "+TR("TODAY"):"")+'</span>'+
         (stars?'<span class="fcStars">'+stars+'</span>':'')+
       '</div>'+
       (tr.length?'<div class="fcPnl '+(sum>=0?"pos":"neg")+'">'+fmtPnl(sum)+' <span class="fcTcount">· '+tr.length+' trade'+(tr.length>1?"s":"")+'</span></div>':'<div class="fcPnl fcNone">no trades logged</div>')+
@@ -1620,11 +1720,11 @@ function journalCaption(kp){
   if(p[1]&&p[1][0]==="t"){
     const date=p[0], ti=+p[1].slice(1), stage=p[2];
     const jt=loadJT(date); const rec=(jt[ti]&&jt[ti][stage])||{};
-    note=rec.note||""; label="TRADE "+(ti+1)+" · "+stage.toUpperCase()+" · "+date;
+    note=rec.note||""; label=TR("TRADE")+" "+(ti+1)+" · "+TR(stage.toUpperCase())+" · "+date;
   }else{
     const date=p[0], stage=p[1];
     const j=loadJ(date); note=((j[stage]&&j[stage].note)||"");
-    label=stage.toUpperCase()+" · "+date;
+    label=TR(stage.toUpperCase())+" · "+date;
   }
   return "<h3>"+escH(label)+"</h3>"+(note.trim()?"<p>"+escH(note)+"</p>":"<p class='lb-empty'>No note written for this stage yet.</p>");
 }
@@ -1755,13 +1855,13 @@ async function buildTradeCard(date,ti,quiet){
   x.fillStyle="#e0122b";x.fillText("Stay disciplined to your system.",W-pad,y+28);
   x.textAlign="left"; y+=52;
   x.fillStyle="#c83e3e";x.font="italic 22px "+F_SERIF;
-  x.fillText("TRADE "+(ti+1)+" · "+date,pad,y); y+=44;
+  x.fillText(TR("TRADE")+" "+(ti+1)+" · "+date,pad,y); y+=44;
   if(cardMeta.length){x.fillStyle="#e8a020";x.font="26px "+F_SANS;x.fillText(cardMeta.join("   ·   "),pad,y);y+=38;}
   /* one row: every stage side by side, its note directly under its image */
   cols.forEach((c,i2)=>{
     const cx=pad+i2*(colW+gap); let cy=y;
     x.fillStyle="#e0122b";x.font="bold 22px "+F_SERIF;
-    x.fillText(c.it.label,cx,cy); cy+=36;
+    x.fillText(TR(c.it.label),cx,cy); cy+=36;
     if(c.it.img){
       x.drawImage(c.it.img,cx,cy,colW,c.imgH);
       x.strokeStyle="rgba(224,18,43,0.35)";x.lineWidth=1.5;x.strokeRect(cx,cy,colW,c.imgH);
@@ -1772,7 +1872,7 @@ async function buildTradeCard(date,ti,quiet){
   y+=rowH;
   if(footerLines.length){
     y+=26;
-    x.fillStyle="#e0122b";x.font="bold 22px "+F_SERIF;x.fillText("WHAT I COULD HAVE DONE BETTER",pad,y);y+=38;
+    x.fillStyle="#e0122b";x.font="bold 22px "+F_SERIF;x.fillText(TR("WHAT I COULD HAVE DONE BETTER"),pad,y);y+=38;
     x.fillStyle="#e8ddd6";x.font="24px "+F_SANS;footerLines.forEach(l=>{x.fillText(l,pad,y);y+=32;});
   }
   cv.toBlob(blob=>{
@@ -1780,7 +1880,7 @@ async function buildTradeCard(date,ti,quiet){
     cardURL=URL.createObjectURL(blob);
     cardName="ANBU_"+date+"_trade"+(ti+1)+".png";
     $("#cardImg").src=cardURL;
-    $("#cardTitle").textContent="TRADE "+(ti+1)+" · "+date;
+    $("#cardTitle").textContent=TR("TRADE")+" "+(ti+1)+" · "+date;
     $("#cardModal").classList.add("on");
     $("#cardPrev").style.display=$("#cardNext").style.display=(cardCtx.n>1?"flex":"none");
   },"image/png");
