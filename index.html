@@ -258,6 +258,14 @@ details .body i{color:var(--text-3)}
 .cardscroll{flex:1;overflow:auto;display:flex;justify-content:center;align-items:center;padding:16px}
 #cardImg{max-width:100%;max-height:calc(100vh - 150px);width:auto;height:auto;object-fit:contain;border:1px solid var(--line);border-radius:8px}
 #cardHint{font-family:var(--sans);font-size:11px;color:var(--text-3);text-align:center;padding:8px 16px 14px;flex-shrink:0}
+.tjmeta{font-family:var(--mono);font-size:10px;color:var(--jade);letter-spacing:1px;margin-left:8px}
+.tstars{cursor:pointer;font-size:16px;letter-spacing:2px;user-select:none}
+.tstars b{color:rgba(255,255,255,.22);font-weight:400}
+.tstars b.on{color:var(--amber);text-shadow:0 0 8px rgba(232,160,32,.55)}
+#aplusStars{margin-left:6px}
+.tjpnl{display:flex;align-items:center;gap:8px;margin:8px 0 6px}
+.tjpnl>span{font-family:var(--mono);font-size:10px;color:var(--text-3);letter-spacing:1px;white-space:nowrap}
+.tjpnl .inp{flex:1;min-width:0}
 .mkcard{width:100%;margin-top:2px;font-size:11px;opacity:.92}
 #nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:var(--w);display:grid;grid-template-columns:repeat(4,1fr);background:rgba(10,7,8,.94);border-top:1px solid var(--line);backdrop-filter:blur(10px);padding-bottom:env(safe-area-inset-bottom);z-index:50}
 #nav button{background:none;border:none;color:var(--text-3);padding:8px 4px 9px;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;min-height:56px;font-family:var(--mono);font-size:10px;letter-spacing:1.5px}
@@ -359,6 +367,7 @@ details .body i{color:var(--text-3)}
         <button class="btn" id="aplusPrev" style="min-height:30px;padding:4px 9px;font-size:13px;line-height:1">‹</button>
         <button class="btn" id="aplusNext" style="min-height:30px;padding:4px 9px;font-size:13px;line-height:1">›</button>
         <button class="btn" id="aplusNew" style="min-height:30px;padding:4px 9px">＋ NEXT TRADE</button>
+        <span id="aplusStars" class="tstars" title="rate this trade"></span>
       </div>
       <div id="grpA"></div>
     </div>
@@ -989,6 +998,7 @@ function refreshChkUI(){
 
   $("#chkCount").textContent="A+ "+aCount+"/"+it.a.length+" · TRADE "+(curTrade+1);
   $("#aplusTrade").textContent="TRADE "+(curTrade+1);
+  renderAplusStars();
 
   const done=it.b.length>0&&bCount===it.b.length;
   $("#doneBanner").style.display=done?"block":"none";
@@ -1321,12 +1331,20 @@ function renderDetail(){
 /* Per-trade Trade Journal in the Calendar day view (any day; view + upload/re-upload). */
 function renderCalJournal(d){
   const jt=loadJT(d);
-  const n=Math.max(jt.length,1);
+  const ap=lsGet("anbu_aplus_"+d,null);
+  const apArr=Array.isArray(ap)?ap:[];
+  const aTotal=loadItems().a.length;
+  const n=Math.max(jt.length,apArr.length,1);
   let html="";
   for(let i=0;i<n;i++){
-    html+='<div class="tj"><div class="tjhd"><span>TRADE '+(i+1)+'</span>'+
+    const rec=jt[i]||{};
+    const apDone=(apArr[i]&&Object.keys(apArr[i]).length)?Object.keys(apArr[i]).length:null;
+    html+='<div class="tj"><div class="tjhd"><span>TRADE '+(i+1)+
+      (apDone!==null?' <span class="tjmeta">A+ '+apDone+'/'+aTotal+'</span>':'')+'</span>'+
+      '<span class="tstars" data-tstars="'+i+'">'+tstarsHTML(+(rec.stars||0))+'</span>'+
       ((i===n-1&&n>1)?'<button class="tjrm" data-tjrm="'+i+'">remove last</button>':'')+
-      '</div><div class="caprow">'+captureTradeHTML(d,i,jt[i]||{})+'</div>'+
+      '</div><div class="caprow">'+captureTradeHTML(d,i,rec)+'</div>'+
+      '<div class="tjpnl"><span>P&L $</span><input class="inp" type="number" step="any" data-tpnl="'+i+'" placeholder="this trade — e.g. 250 / -120" value="'+((rec.pnl!==undefined&&rec.pnl!=="")?escA(String(rec.pnl)):"")+'"></div>'+
       '<button class="btn mkcard" data-mkcard="'+i+'">🖼 COMBINE INTO ONE IMAGE (before · during · after · P&L)</button></div>';
   }
   $("#calJournal").innerHTML=html;
@@ -1417,6 +1435,26 @@ $("#dayStars").addEventListener("click",e=>{
   saveJ(selDate,j); renderStars(); renderCal();
 });
 $("#jBetter").addEventListener("input",()=>{const j=loadJ(selDate); j.better=$("#jBetter").value; saveJ(selDate,j); renderCal();});
+function tstarsHTML(st){let h="";for(let k=1;k<=5;k++)h+='<b data-star-n="'+k+'" class="'+(k<=st?"on":"")+'">'+(k<=st?"★":"☆")+"</b>";return h;}
+function renderAplusStars(){const el=document.getElementById("aplusStars");if(!el)return;const jt=loadJT(todayKey());el.innerHTML=tstarsHTML(+((jt[curTrade]||{}).stars||0));}
+document.getElementById("aplusStars").addEventListener("click",e=>{
+  const b=e.target.closest("[data-star-n]"); if(!b)return;
+  const d=todayKey(), jt=loadJT(d); if(!jt[curTrade])jt[curTrade]={};
+  const v=+b.dataset.starN; jt[curTrade].stars=(jt[curTrade].stars===v?0:v); saveJT(d,jt);
+  renderAplusStars(); if(selDate===d)renderCalJournal(d);
+});
+$("#calJournal").addEventListener("click",e=>{
+  const b=e.target.closest(".tstars [data-star-n]"); if(!b)return;
+  const w=b.closest("[data-tstars]"); if(!w)return;
+  const i=+w.dataset.tstars, jt=loadJT(selDate); if(!jt[i])jt[i]={};
+  const v=+b.dataset.starN; jt[i].stars=(jt[i].stars===v?0:v); saveJT(selDate,jt);
+  renderCalJournal(selDate); renderAplusStars();
+});
+$("#calJournal").addEventListener("change",e=>{
+  const pl=e.target.closest("[data-tpnl]"); if(!pl)return;
+  const i=+pl.dataset.tpnl, jt=loadJT(selDate); if(!jt[i])jt[i]={};
+  const v=pl.value.trim(); jt[i].pnl=(v===""?"":+v); saveJT(selDate,jt);
+});
 $("#calAddTrade").addEventListener("click",()=>{
   const jt=loadJT(selDate); jt.push({}); saveJT(selDate,jt);
   renderCalJournal(selDate); renderCal();
@@ -1599,6 +1637,12 @@ async function buildTradeCard(date,ti){
     }
   }
   const better=((loadJ(date).better)||"").trim();
+  const apArrC=lsGet("anbu_aplus_"+date,null);
+  const apRecC=Array.isArray(apArrC)?apArrC[ti]:null;
+  const cardMeta=[];
+  if(apRecC&&Object.keys(apRecC).length)cardMeta.push("A+ CHECKLIST "+Object.keys(apRecC).length+"/"+loadItems().a.length);
+  const stC=+((rec&&rec.stars)||0); if(stC)cardMeta.push("★".repeat(stC)+"☆".repeat(5-stC));
+  if(rec&&rec.pnl!==undefined&&rec.pnl!==""&&rec.pnl!==null&&!isNaN(+rec.pnl)){const pv=+rec.pnl;cardMeta.push("P&L "+(pv>0?"+":"")+pv);}
   if(!items.length&&!better){alert("Nothing to combine yet — add a screenshot or a note to this trade first.");return;}
   const N=items.length||1, pad=50, gap=28;
   const W = N<=1?1080 : N===2?1500 : N===3?1860 : 2200;
@@ -1616,7 +1660,7 @@ async function buildTradeCard(date,ti){
   });
   const rowH = cols.length ? Math.max(...cols.map(c=>c.ch)) : 0;
   let footerLines=[]; if(better){m.font="24px "+F_SANS; footerLines=wrapLines(m,better,imgW);}
-  let H = pad + 52 + 44 + rowH + (footerLines.length? 26+38+footerLines.length*32 : 0) + pad;
+  let H = pad + 52 + 44 + (cardMeta.length?38:0) + rowH + (footerLines.length? 26+38+footerLines.length*32 : 0) + pad;
   /* draw */
   const cv=document.createElement("canvas");cv.width=W;cv.height=H;const x=cv.getContext("2d");
   x.fillStyle="#0a0708";x.fillRect(0,0,W,H);
@@ -1636,6 +1680,7 @@ async function buildTradeCard(date,ti){
   x.textAlign="left"; y+=52;
   x.fillStyle="#c83e3e";x.font="italic 22px "+F_SERIF;
   x.fillText("TRADE "+(ti+1)+" · "+date,pad,y); y+=44;
+  if(cardMeta.length){x.fillStyle="#e8a020";x.font="26px "+F_SANS;x.fillText(cardMeta.join("   ·   "),pad,y);y+=38;}
   /* one row: every stage side by side, its note directly under its image */
   cols.forEach((c,i2)=>{
     const cx=pad+i2*(colW+gap); let cy=y;
