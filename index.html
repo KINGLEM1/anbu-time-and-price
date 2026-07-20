@@ -163,6 +163,8 @@ header.top .creed .c2{color:var(--crimson);font-style:normal;text-shadow:0 0 12p
 .fcTop{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px}
 .fcDate{font-family:var(--mono);font-size:11px;color:var(--text-3);letter-spacing:.5px}
 .fcStars{color:var(--amber);font-size:12px;letter-spacing:1px;text-shadow:0 0 6px rgba(232,160,32,.4)}
+.fcCards{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.fcMk{font-size:10px;min-height:30px;padding:4px 8px;opacity:.9}
 .fcPnl{font-family:var(--mono);font-size:14px;font-weight:700}
 .fcPnl.pos{color:var(--jade)}
 .fcPnl.neg{color:var(--crimson)}
@@ -1220,7 +1222,7 @@ document.addEventListener("click",e=>{
     }); return;
   }
   const mk=e.target.closest("[data-mkcard]");
-  if(mk){buildTradeCard(selDate,+mk.dataset.mkcard); return;}
+  if(mk){buildTradeCard(mk.dataset.mkday||selDate,+mk.dataset.mkcard); return;}
   const gi=e.target.closest(".gal img,[data-lb]");
   if(gi){
     if(gi.dataset.lbkey){openLBAt(gi);}
@@ -1369,6 +1371,9 @@ function renderFeed(){
     const tr=loadTrades(k);
     let sum=0; tr.forEach(t=>sum+=t.pnl);
     const j=loadJ(k);
+    const jtF=loadJT(k);
+    const apF=lsGet("anbu_aplus_"+k,null);
+    const nT=Math.max(jtF.length,Array.isArray(apF)?apF.length:0);
     const g=(j.grade)|0;
     const better=(j.better||"").trim();
     const stars=g?"★".repeat(g)+"☆".repeat(5-g):"";
@@ -1381,6 +1386,7 @@ function renderFeed(){
       (tr.length?'<div class="fcPnl '+(sum>=0?"pos":"neg")+'">'+fmtPnl(sum)+' <span class="fcTcount">· '+tr.length+' trade'+(tr.length>1?"s":"")+'</span></div>':'<div class="fcPnl fcNone">no trades logged</div>')+
       (better?'<div class="fcBetter">"'+escH(better)+'"</div>':'')+
       '<div class="fcThumbs" data-fcthumbs="'+k+'"></div>'+
+      (nT?'<div class="fcCards">'+Array.from({length:nT},(_,i2)=>'<button class="btn fcMk" data-mkcard="'+i2+'" data-mkday="'+k+'">&#x1F5BC; TRADE '+(i2+1)+'</button>').join("")+'</div>':'')+
     '</div>';
   }
   if(!html)html='<div class="tnone" style="text-align:center;padding:20px">No entries this month yet. Log trades (photos · P&amp;L · stars) and FEED becomes your visual trading diary — one card per day with your before / during / after shots.</div>';
