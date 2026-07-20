@@ -270,6 +270,7 @@ details .body i{color:var(--text-3)}
 .tjpnl{display:flex;align-items:center;gap:8px;margin:8px 0 6px}
 .tjpnl>span{font-family:var(--mono);font-size:10px;color:var(--text-3);letter-spacing:1px;white-space:nowrap}
 .tjpnl .inp{flex:1;min-width:0}
+.cap.dropping{outline:2px dashed var(--crimson);outline-offset:2px;border-radius:8px}
 .mkcard{width:100%;margin-top:2px;font-size:11px;opacity:.92}
 #nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:var(--w);display:grid;grid-template-columns:repeat(4,1fr);background:rgba(10,7,8,.94);border-top:1px solid var(--line);backdrop-filter:blur(10px);padding-bottom:env(safe-area-inset-bottom);z-index:50}
 #nav button{background:none;border:none;color:var(--text-3);padding:8px 4px 9px;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;min-height:56px;font-family:var(--mono);font-size:10px;letter-spacing:1.5px}
@@ -423,7 +424,7 @@ details .body i{color:var(--text-3)}
 <!-- TAB 4 : MANUAL -->
 <section id="tab-manual" class="tab">
 
-  <details data-secid="core-philosophy" open><summary><span>CORE PHILOSOPHY</span><button class="secEdit" data-secid="core-philosophy">✎</button></summary><div class="body">
+  <details data-secid="core-philosophy"><summary><span>CORE PHILOSOPHY</span><button class="secEdit" data-secid="core-philosophy">✎</button></summary><div class="body">
     <div class="callout">
       <h5>NARRATIVE OVER PATTERN-TRADING</h5>
       <p>This is NOT pattern trading. The MODEL is the consistent framework, but every trade is DIFFERENT — what you actually trade is the <b class="red">NARRATIVE</b>: the real-time story of why price should deliver to a specific draw on liquidity, built from the day's confluences (HTF context, manipulation, time anchor, which liquidity is the draw, imbalances/key levels) plus experience and intuition. Same model, different narrative each session. If you can't articulate the narrative — why THIS delivery, to THIS target, NOW — you don't have a trade, you have a pattern guess. The checklist and model stack probability; <b>the narrative is what you're trading</b>.</p>
@@ -1242,27 +1243,45 @@ document.addEventListener("click",e=>{
     return;
   }
 });
+function savePhoto(file,ctx){
+  if(!file||!ctx||String(file.type).indexOf("image/")!==0)return;
+  let k;
+  if(ctx.trade!==undefined){k=ctx.date+":t"+ctx.trade+":"+ctx.stage+":photo";}
+  else{k=ctx.date+":"+ctx.stage+":photo";}
+  idbSet(k,{blob:file,name:file.name||"photo"}).then(()=>{
+    if(urlCache[k]){URL.revokeObjectURL(urlCache[k]);delete urlCache[k];}
+    idxAdd(k);
+    if(ctx.trade!==undefined){
+      refreshThumbsTrade(ctx.date,ctx.trade,ctx.stage); renderCal();
+      if(calViewMode==="feed")renderFeed();
+    }else{
+      refreshThumbs(ctx.date,ctx.stage); renderCal();
+    }
+  });
+}
 $("#filePhoto").addEventListener("change",()=>{
   const inp=$("#filePhoto");
   if(!inp.files||!inp.files[0]||!pending)return;
-  const file=inp.files[0];
-  let k;
-  if(pending.trade!==undefined){
-    k=pending.date+":t"+pending.trade+":"+pending.stage+":photo";
-  }else{
-    k=pending.date+":"+pending.stage+":photo";
-  }
-  idbSet(k,{blob:file,name:file.name}).then(()=>{
-    if(urlCache[k]){URL.revokeObjectURL(urlCache[k]);delete urlCache[k];}
-    idxAdd(k);
-    if(pending.trade!==undefined){
-      refreshThumbsTrade(pending.date,pending.trade,pending.stage); renderCal();
-      if(calViewMode==="feed")renderFeed();
-    }else{
-      refreshThumbs(pending.date,pending.stage); renderCal();
-    }
-  });
+  savePhoto(inp.files[0],pending);
   inp.value="";
+});
+/* drag & drop an image straight onto any BEFORE / DURING / AFTER / P&L box */
+document.addEventListener("dragover",e=>{
+  e.preventDefault();
+  const cap=e.target&&e.target.closest?e.target.closest(".cap"):null;
+  $$(".cap.dropping").forEach(c=>{if(c!==cap)c.classList.remove("dropping");});
+  if(cap)cap.classList.add("dropping");
+});
+document.addEventListener("drop",e=>{
+  e.preventDefault();
+  $$(".cap.dropping").forEach(c=>c.classList.remove("dropping"));
+  const cap=e.target&&e.target.closest?e.target.closest(".cap"):null;
+  if(!cap)return;
+  const btn=cap.querySelector("[data-mbtn]"); if(!btn)return;
+  const f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0]; if(!f)return;
+  const ctx={stage:btn.dataset.stage,date:btn.dataset.date};
+  if(btn.dataset.trade!==undefined)ctx.trade=btn.dataset.trade;
+  savePhoto(f,ctx);
 });
 document.addEventListener("input",e=>{
   const n=e.target.closest("[data-cnote]");
