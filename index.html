@@ -392,6 +392,10 @@ details .body i{color:var(--text-3)}
     <div class="qlbl" data-i18n="quoteLabel">QUOTE OF THE DAY</div>
     <div id="quoteText" data-noi18n>—</div>
     <div id="quoteSrc">—</div>
+    <div class="vsep"></div>
+    <div class="bklbl" id="verseLbl" data-noi18n>VERSE OF THE DAY</div>
+    <div id="verseText" data-noi18n>—</div>
+    <div id="verseRef" data-noi18n>—</div>
     <button id="quoteShare" type="button">SHARE</button>
   </div>
 
@@ -406,10 +410,6 @@ details .body i{color:var(--text-3)}
     <div class="bklbl" id="bookAppliedLbl" data-noi18n>APPLIED TO TRADING</div>
     <div id="bookApplied" data-noi18n></div>
     <div id="bookLine" data-noi18n>—</div>
-    <div class="vsep"></div>
-    <div class="bklbl" id="verseLbl" data-noi18n>VERSE OF THE DAY</div>
-    <div id="verseText" data-noi18n>—</div>
-    <div id="verseRef" data-noi18n>—</div>
   </div>
 
 
@@ -1260,10 +1260,6 @@ function renderBook(){
     wrap.appendChild(row);
   }
   $("#bookLine").textContent=b.ml;
-  var v=verseOfDay();
-  $("#verseLbl").textContent=TR("VERSE OF THE DAY");
-  $("#verseText").textContent=v.txt;
-  $("#verseRef").textContent="— "+v.ref;
 }
 function renderQuote(){
   const p=nyParts();
@@ -1271,6 +1267,10 @@ function renderQuote(){
   const q=QUOTES[idx];
   $("#quoteText").textContent=TR(q.t);
   $("#quoteSrc").textContent="— "+q.s;
+  var v=verseOfDay();
+  $("#verseLbl").textContent=TR("VERSE OF THE DAY");
+  $("#verseText").textContent=v.txt;
+  $("#verseRef").textContent="— "+v.ref;
 }
 
 /* ---------- INDEXEDDB (photos) ---------- */
@@ -2274,9 +2274,6 @@ function buildBookCard() {
   }
   m.font = "italic 28px " + F_SERIF;
   var mlLines = wrapLines(m, b.ml, colW - 30);
-  var vv = verseOfDay();
-  m.font = "italic 26px " + F_SERIF;
-  var vLines = wrapLines(m, vv.txt, colW);
   var H = pad
     + 52
     + 46
@@ -2298,7 +2295,6 @@ function buildBookCard() {
       })()
     + 30
     + mlLines.length * 40 + 24
-    + 34 + 28 + vLines.length * 36 + 32
     + 54
     + pad;
   H = Math.round(H);
@@ -2396,15 +2392,6 @@ function buildBookCard() {
     y += 40;
   }
   y += 24;
-  x.strokeStyle = "rgba(224,18,43,0.28)"; x.lineWidth = 1;
-  x.beginPath(); x.moveTo(pad, y + 10); x.lineTo(W - pad, y + 10); x.stroke();
-  y += 34;
-  x.fillStyle = "#e8a020"; x.font = "bold 20px " + F_SANS;
-  x.fillText(TR("VERSE OF THE DAY"), pad, y); y += 28;
-  x.fillStyle = "#f0eaeb"; x.font = "italic 26px " + F_SERIF;
-  for (var vi = 0; vi < vLines.length; vi++) { x.fillText(vLines[vi], pad, y); y += 36; }
-  x.fillStyle = "#e0122b"; x.font = "20px " + F_SERIF;
-  x.fillText("— " + vv.ref, pad, y); y += 32;
   x.textBaseline = "alphabetic";
   x.font = "20px " + F_SANS;
   x.fillStyle = "#8a7a7d";
@@ -2479,8 +2466,13 @@ function buildQuoteCard(){
   ctx.font="italic "+fontSize+"px "+F_SERIF;
   lineHeight=Math.round(fontSize*1.32);
   var attrGap=56, attrH=30;
-  var blockH=lines.length*lineHeight + attrGap + attrH;
+  var vday=verseOfDay();
+  ctx.font="italic 24px "+F_SERIF;
+  var vLines=wrapLines(ctx, vday.txt, W-2*pad-120);
+  var vBlock=54 + 26 + vLines.length*34 + 30;
+  var blockH=lines.length*lineHeight + attrGap + attrH + vBlock;
   var startY=H*0.50 - blockH/2;
+  ctx.font="italic "+fontSize+"px "+F_SERIF;
   ctx.textAlign="center";
   ctx.fillStyle="#f0eaeb";
   for(var i=0;i<lines.length;i++){
@@ -2492,6 +2484,17 @@ function buildQuoteCard(){
   ctx.font="italic 30px "+F_SERIF;
   ctx.fillStyle="#e0122b";
   ctx.fillText("— " + q.s, W/2, attrY);
+
+  // 5b. Verse of the day
+  var vy=attrY + attrH + 54;
+  ctx.strokeStyle="rgba(224,18,43,0.30)"; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(W/2-150, vy-24); ctx.lineTo(W/2+150, vy-24); ctx.stroke();
+  ctx.fillStyle="#e8a020"; ctx.font="bold 18px "+F_SANS;
+  ctx.fillText(TR("VERSE OF THE DAY"), W/2, vy); vy+=26;
+  ctx.fillStyle="#f0eaeb"; ctx.font="italic 24px "+F_SERIF;
+  for(var vi=0;vi<vLines.length;vi++){ ctx.fillText(vLines[vi], W/2, vy); vy+=34; }
+  ctx.fillStyle="#e0122b"; ctx.font="20px "+F_SERIF;
+  ctx.fillText("— "+vday.ref, W/2, vy+4);
 
   // 6. Footer
   var dateStr=p.y+"-"+("0"+p.mo).slice(-2)+"-"+("0"+p.d).slice(-2);
