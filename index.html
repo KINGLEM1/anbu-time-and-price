@@ -379,7 +379,7 @@ details .body i{color:var(--text-3)}
 
   <div class="gt" style="margin-top:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">DAILY DISCIPLINE — END OF DAY <button class="btn" id="dlyEdit" style="min-height:30px;padding:4px 9px">EDIT</button></div>
   <div id="grpB"></div>
-  <div id="verTag" data-noi18n>ANBU v46 · build 2026-07-21</div>
+  <div id="verTag" data-noi18n>ANBU v48 · build 2026-07-21</div>
 
   <div class="card" id="syncCard">
     <div class="qlbl">BACKUP &amp; TRANSFER</div>
@@ -1018,6 +1018,8 @@ const TL={
 "That file is not an ANBU backup.":{es:"Ese archivo no es una copia de ANBU.",zh:"该文件不是 ANBU 备份。",fr:"Ce fichier n'est pas une sauvegarde ANBU.",ar:"هذا الملف ليس نسخة احتياطية من ANBU."}
 ,
 "VERSE OF THE DAY":{es:"VERSÍCULO DEL DÍA",zh:"每日经文",fr:"VERSET DU JOUR",ar:"آية اليوم"}
+,
+"Some photos could not be added":{es:"Algunas fotos no se pudieron añadir",zh:"部分照片无法添加",fr:"Certaines photos n'ont pas pu être ajoutées",ar:"تعذّر إضافة بعض الصور"}
 };
 function _loc(){return {en:"en-US",es:"es-ES",zh:"zh-CN",fr:"fr-FR",ar:"ar"}[curLang]||"en-US";}
 let curLang=(function(){try{return localStorage.getItem("anbu_lang")||"en";}catch(e){return "en";}})();
@@ -1753,8 +1755,17 @@ function savePhotos(files,ctx){
   var list=[].slice.call(files||[]).filter(function(f){return f&&String(f.type).indexOf("image/")===0;});
   if(ctx.stage==="pnl")list=list.slice(0,1);
   var chain=Promise.resolve();
-  list.forEach(function(f){ chain=chain.then(function(){ return savePhoto(f,ctx); }); });
-  return chain;
+  var failed=0;
+  list.forEach(function(f){
+    chain=chain.then(function(){
+      /* isolate each file: one failure must not abort the whole selection */
+      return savePhoto(f,ctx).catch(function(e){ failed++; try{console.warn("ANBU: photo failed",f&&f.name,e);}catch(_){} });
+    });
+  });
+  return chain.then(function(){
+    if(failed){ try{alert(TR("Some photos could not be added")+": "+failed+"/"+list.length);}catch(e){} }
+    return failed;
+  });
 }
 function savePhotoRaw(file,ctx){
   if(!file||!ctx||String(file.type).indexOf("image/")!==0)return Promise.resolve();
@@ -1764,12 +1775,16 @@ function savePhotoRaw(file,ctx){
   return idbSet(k,{blob:file,name:file.name||"photo",ts:Date.now()}).then(()=>{
     if(urlCache[k]){URL.revokeObjectURL(urlCache[k]);delete urlCache[k];}
     idxAdd(k);
-    if(ctx.trade!==undefined){
-      refreshThumbsTrade(ctx.date,ctx.trade,ctx.stage); renderCal();
-      if(calViewMode==="feed")renderFeed();
-    }else{
-      refreshThumbs(ctx.date,ctx.stage); renderCal();
-    }
+    /* The photo is saved by this point. Redraw failures must never reject this promise,
+       or the next file in a multi-select batch would never be written. */
+    try{
+      if(ctx.trade!==undefined){
+        refreshThumbsTrade(ctx.date,ctx.trade,ctx.stage); renderCal();
+        if(calViewMode==="feed")renderFeed();
+      }else{
+        refreshThumbs(ctx.date,ctx.stage); renderCal();
+      }
+    }catch(e){ try{console.warn("ANBU: redraw after save failed",e);}catch(_){} }
   });
 }
 $("#filePhoto").addEventListener("change",()=>{
