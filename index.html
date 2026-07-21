@@ -730,7 +730,7 @@ details .body i{color:var(--text-3)}
   <div id="cardHint">One image — long-press (phone) or right-click to save, or use SAVE IMAGE.</div>
 </div>
 
-<input type="file" id="filePhoto" accept="image/*" hidden>
+<input type="file" id="filePhoto" accept="image/*" multiple hidden>
 <input type="file" id="fileBackup" accept=".anbu,application/json" hidden>
 
 <script>
@@ -1614,10 +1614,11 @@ function captureTradeHTML(date,tradeIdx,j){
 function refreshThumbs(date,stage){
   const els=$$('[data-thumbs="'+date+':'+stage+'"]');
   if(!els.length)return;
-  const kp=date+":"+stage+":photo";
-  idbGet(kp).then(ph=>{
+  const keys=photoKeysFor(date+":"+stage+":photo");
+  Promise.all(keys.map(k=>idbGet(k).then(ph=>({k:k,ph:ph})))).then(list=>{
     let h="";
-    if(ph&&ph.blob)h='<span class="th"><img src="'+objURL(kp,ph.blob)+'" data-lb title="'+escA(ph.name||"photo")+'"><button data-mrm="'+kp+'">✕</button></span>';
+    list.forEach(o=>{ if(o.ph&&o.ph.blob)
+      h+='<span class="th"><img src="'+objURL(o.k,o.ph.blob)+'" data-lb data-lbkey="'+escA(o.k)+'" title="'+escA(o.ph.name||"photo")+'"><button data-mrm="'+o.k+'">✕</button></span>'; });
     els.forEach(el=>el.innerHTML=h);
   });
 }
@@ -1627,10 +1628,11 @@ function refreshThumbsTrade(date,tradeIdx,stage){
   const tk=date+":t"+tradeIdx+":"+stage;
   const els=$$('[data-thumbs="'+tk+'"]');
   if(!els.length)return;
-  const kp=tk+":photo";
-  idbGet(kp).then(ph=>{
+  const keys=photoKeysFor(tk+":photo");
+  Promise.all(keys.map(k=>idbGet(k).then(ph=>({k:k,ph:ph})))).then(list=>{
     let h="";
-    if(ph&&ph.blob)h='<span class="th"><img src="'+objURL(kp,ph.blob)+'" data-lb data-lbkey="'+escA(kp)+'" title="'+escA(ph.name||"photo")+'"><button data-mrm="'+kp+'">✕</button></span>';
+    list.forEach(o=>{ if(o.ph&&o.ph.blob)
+      h+='<span class="th"><img src="'+objURL(o.k,o.ph.blob)+'" data-lb data-lbkey="'+escA(o.k)+'" title="'+escA(o.ph.name||"photo")+'"><button data-mrm="'+o.k+'">✕</button></span>'; });
     els.forEach(el=>el.innerHTML=h);
   });
 }
@@ -1651,6 +1653,7 @@ document.addEventListener("click",e=>{
   if(mb){
     pending={stage:mb.dataset.stage,date:mb.dataset.date};
     if(mb.dataset.trade!==undefined)pending.trade=mb.dataset.trade;
+    $("#filePhoto").multiple=(pending.stage!=="pnl");
     $("#filePhoto").click(); return;
   }
   const rm=e.target.closest("[data-mrm]");
@@ -1714,16 +1717,48 @@ function compressImage(file){
     }catch(e){res(file);}
   });
 }
+/* ---- multi-photo slots ----------------------------------------------------
+   Photo 1 keeps the original key so existing journals keep working untouched;
+   extras live at <base>~2, <base>~3 ... P&L is capped at a single photo. */
+var MAX_PHOTOS=8;
+function baseKeyOf(ctx){
+  return ctx.trade!==undefined ? ctx.date+":t"+ctx.trade+":"+ctx.stage+":photo"
+                               : ctx.date+":"+ctx.stage+":photo";
+}
+function photoKeysFor(base){
+  var idx=mediaIdx(), out=[];
+  if(idx[base])out.push(base);
+  for(var i=2;i<=MAX_PHOTOS;i++){ if(idx[base+"~"+i])out.push(base+"~"+i); }
+  return out;
+}
+function nextPhotoKey(base){
+  var idx=mediaIdx();
+  if(!idx[base])return base;
+  for(var i=2;i<=MAX_PHOTOS;i++){ if(!idx[base+"~"+i])return base+"~"+i; }
+  return null;
+}
+function isPhotoKey(k){ return /:photo(~\d+)?$/.test(k); }
+function hasAnyPhoto(base){ return photoKeysFor(base).length>0; }
 function savePhoto(file,ctx){
-  if(!file||!ctx||String(file.type).indexOf("image/")!==0)return;
-  compressImage(file).then(function(b){savePhotoRaw(b,ctx);},function(){savePhotoRaw(file,ctx);});
+  if(!file||!ctx||String(file.type).indexOf("image/")!==0)return Promise.resolve();
+  return compressImage(file).then(function(b){return savePhotoRaw(b,ctx);},
+                                  function(){return savePhotoRaw(file,ctx);});
+}
+/* Save a whole selection one at a time - concurrent saves would race for the same
+   free slot and overwrite each other. P&L takes only the first file. */
+function savePhotos(files,ctx){
+  var list=[].slice.call(files||[]).filter(function(f){return f&&String(f.type).indexOf("image/")===0;});
+  if(ctx.stage==="pnl")list=list.slice(0,1);
+  var chain=Promise.resolve();
+  list.forEach(function(f){ chain=chain.then(function(){ return savePhoto(f,ctx); }); });
+  return chain;
 }
 function savePhotoRaw(file,ctx){
-  if(!file||!ctx||String(file.type).indexOf("image/")!==0)return;
-  let k;
-  if(ctx.trade!==undefined){k=ctx.date+":t"+ctx.trade+":"+ctx.stage+":photo";}
-  else{k=ctx.date+":"+ctx.stage+":photo";}
-  idbSet(k,{blob:file,name:file.name||"photo",ts:Date.now()}).then(()=>{
+  if(!file||!ctx||String(file.type).indexOf("image/")!==0)return Promise.resolve();
+  const base=baseKeyOf(ctx);
+  /* P&L overwrites its single slot; the rest fill the next free one. */
+  const k=(ctx.stage==="pnl")?base:(nextPhotoKey(base)||base);
+  return idbSet(k,{blob:file,name:file.name||"photo",ts:Date.now()}).then(()=>{
     if(urlCache[k]){URL.revokeObjectURL(urlCache[k]);delete urlCache[k];}
     idxAdd(k);
     if(ctx.trade!==undefined){
@@ -1736,8 +1771,8 @@ function savePhotoRaw(file,ctx){
 }
 $("#filePhoto").addEventListener("change",()=>{
   const inp=$("#filePhoto");
-  if(!inp.files||!inp.files[0]||!pending)return;
-  savePhoto(inp.files[0],pending);
+  if(!inp.files||!inp.files.length||!pending)return;
+  savePhotos(inp.files,pending);
   inp.value="";
 });
 /* drag & drop an image straight onto any BEFORE / DURING / AFTER / P&L box */
@@ -1753,10 +1788,10 @@ document.addEventListener("drop",e=>{
   const cap=e.target&&e.target.closest?e.target.closest(".cap"):null;
   if(!cap)return;
   const btn=cap.querySelector("[data-mbtn]"); if(!btn)return;
-  const f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0]; if(!f)return;
+  const fl=e.dataTransfer&&e.dataTransfer.files; if(!fl||!fl.length)return;
   const ctx={stage:btn.dataset.stage,date:btn.dataset.date};
   if(btn.dataset.trade!==undefined)ctx.trade=btn.dataset.trade;
-  savePhoto(f,ctx);
+  savePhotos(fl,ctx);
 });
 document.addEventListener("input",e=>{
   const n=e.target.closest("[data-cnote]");
@@ -1791,8 +1826,8 @@ function hasEntry(d){
   const jt=loadJT(d);
   if(jt.some(t=>t&&STAGES.some(s=>t[s.id]&&(t[s.id].note||"").trim().length)))return true;
   const idx=mediaIdx();
-  if(STAGES.some(s=>idx[d+":"+s.id+":photo"]))return true;
-  return Object.keys(idx).some(k=>k.indexOf(d+":t")===0&&k.endsWith(":photo"));
+  if(STAGES.some(s=>hasAnyPhoto(d+":"+s.id+":photo")))return true;
+  return Object.keys(idx).some(k=>k.indexOf(d+":t")===0&&isPhotoKey(k));
 }
 function renderCal(){
   const MN=["JANUARY","FEBRUARY","MARCH","APRIL","MAY","JUNE","JULY","AUGUST","SEPTEMBER","OCTOBER","NOVEMBER","DECEMBER"];
@@ -1892,8 +1927,8 @@ function renderFeed(){
   $("#calFeed").innerHTML=html;
   $$("[data-fcthumbs]").forEach(el=>{
     const date=el.dataset.fcthumbs;
-    const dayKeys=STAGES_CAL.filter(s=>idx[date+":"+s.id+":photo"]).map(s=>date+":"+s.id+":photo");
-    const trKeys=Object.keys(idx).filter(k=>k.indexOf(date+":t")===0&&k.endsWith(":photo")).sort();
+    let dayKeys=[]; STAGES_CAL.forEach(s=>{dayKeys=dayKeys.concat(photoKeysFor(date+":"+s.id+":photo"));});
+    const trKeys=Object.keys(idx).filter(k=>k.indexOf(date+":t")===0&&isPhotoKey(k)).sort();
     const keys=dayKeys.concat(trKeys);
     if(!keys.length)return;
     Promise.all(keys.map(kp=>idbGet(kp).then(ph=>({kp,ph}))))
@@ -2536,11 +2571,13 @@ async function buildTradeCard(date,ti,quiet){
   const items=[];
   for(const [id,label] of STG){
     const note=((rec[id]&&rec[id].note)||"").trim();
-    const ph=await idbGet(date+":t"+ti+":"+id+":photo");
-    if((ph&&ph.blob)||note){
-      let img=null; if(ph&&ph.blob){try{img=await blobToImg(ph.blob);}catch(e){img=null;}}
-      items.push({label,note,img});
+    const pkeys=photoKeysFor(date+":t"+ti+":"+id+":photo");
+    const imgs=[];
+    for(const pk of pkeys){
+      const ph=await idbGet(pk);
+      if(ph&&ph.blob){try{imgs.push(await blobToImg(ph.blob));}catch(e){}}
     }
+    if(imgs.length||note){ items.push({label,note,imgs}); }
   }
   const better=((loadJ(date).better)||"").trim();
   const apArrC=lsGet("anbu_aplus_"+date,null);
@@ -2559,11 +2596,12 @@ async function buildTradeCard(date,ti,quiet){
   const m=document.createElement("canvas").getContext("2d");
   /* measure columns */
   const cols = items.map(it=>{
-    let ch=36, noteLines=[], imgH=0;
-    if(it.img) imgH=Math.round(it.img.naturalHeight*colW/it.img.naturalWidth);
+    let ch=36, noteLines=[], imgH=0, hs=[];
+    it.imgs.forEach(im=>{const hh=Math.round(im.naturalHeight*colW/im.naturalWidth); hs.push(hh); imgH+=hh;});
+    if(hs.length>1) imgH += (hs.length-1)*10;
     if(it.note){m.font="20px "+F_SANS; noteLines=wrapLines(m,it.note,colW); }
     ch += imgH + (imgH?10:0) + noteLines.length*27 + 6;
-    return {it,noteLines,imgH,ch};
+    return {it,noteLines,imgH,hs,ch};
   });
   const rowH = cols.length ? Math.max(...cols.map(c=>c.ch)) : 0;
   let footerLines=[]; if(better){m.font="24px "+F_SANS; footerLines=wrapLines(m,better,imgW);}
@@ -2593,10 +2631,13 @@ async function buildTradeCard(date,ti,quiet){
     const cx=pad+i2*(colW+gap); let cy=y;
     x.fillStyle="#e0122b";x.font="bold 22px "+F_SERIF;
     x.fillText(TR(c.it.label),cx,cy); cy+=36;
-    if(c.it.img){
-      x.drawImage(c.it.img,cx,cy,colW,c.imgH);
-      x.strokeStyle="rgba(224,18,43,0.35)";x.lineWidth=1.5;x.strokeRect(cx,cy,colW,c.imgH);
-      cy+=c.imgH+10;
+    if(c.it.imgs.length){
+      c.it.imgs.forEach((im,ii)=>{
+        const hh=c.hs[ii];
+        x.drawImage(im,cx,cy,colW,hh);
+        x.strokeStyle="rgba(224,18,43,0.35)";x.lineWidth=1.5;x.strokeRect(cx,cy,colW,hh);
+        cy+=hh+10;
+      });
     }
     if(c.noteLines.length){x.fillStyle="#e8ddd6";x.font="20px "+F_SANS;c.noteLines.forEach(l=>{x.fillText(l,cx,cy);cy+=27;});}
   });
