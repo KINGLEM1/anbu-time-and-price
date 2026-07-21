@@ -2458,8 +2458,8 @@ function buildQuoteCard(){
   var q=QUOTES[dayOfYear(p)%QUOTES.length];
   var quoteText=TR(q.t);
   /* One type scale, used by BOTH the measure pass and the draw pass so they cannot drift. */
-  var ATTR=40, ATTR_GAP=66;
-  var V_LBL=22, V_TXT=34, V_LH=47, V_REF=27, V_GAP=70;
+  var ATTR=36, ATTR_GAP=58;
+  var V_LBL=24, V_TXT=44, V_LH=58, V_REF=28, V_GAP=64;
   var maxWidth=W-2*pad-16;
   var attrGap=ATTR_GAP, attrH=ATTR;
   /* Measure the verse FIRST, then shrink the quote until the whole group fits the band -
@@ -2469,7 +2469,7 @@ function buildQuoteCard(){
   var vLines=wrapLines(ctx, vday.txt, W-2*pad-24);
   var vBlock=V_GAP + V_LBL+10 + vLines.length*V_LH + V_REF+12;
   var fontSize, lines, lineHeight, blockH;
-  for(fontSize=92; fontSize>=34; fontSize-=4){
+  for(fontSize=68; fontSize>=34; fontSize-=4){
     ctx.font="italic "+fontSize+"px "+F_SERIF;
     lines=wrapLines(ctx, quoteText, maxWidth);
     lineHeight=Math.round(fontSize*1.28);
