@@ -282,7 +282,7 @@ details .body i{color:var(--text-3)}
 #nav button.on{color:var(--crimson);text-shadow:0 0 12px var(--glow)}
 #quoteCard{margin:10px 0}
 #quoteCard .qlbl{font-family:var(--serif);font-size:10px;letter-spacing:2px;color:var(--text-3);margin-bottom:6px}
-#quoteText{font-family:var(--serif);font-style:italic;font-size:14.5px;line-height:1.55;color:var(--text);margin-bottom:6px}
+#quoteText{font-family:var(--serif);font-style:italic;font-size:17px;line-height:1.62;color:var(--text);margin-bottom:8px}
 #syncHint{font-size:11.5px;line-height:1.55;color:var(--text-2);margin:2px 0 11px}
 .syncrow{display:flex;gap:8px;flex-wrap:wrap}
 .syncrow button{flex:1 1 auto;min-width:96px;font-family:var(--serif);font-size:11px;letter-spacing:1.4px;color:var(--crimson);background:rgba(224,18,43,.07);border:1px solid rgba(224,18,43,.35);border-radius:7px;padding:9px 10px;cursor:pointer;transition:background .2s,box-shadow .2s}
@@ -295,14 +295,14 @@ details .body i{color:var(--text-3)}
 #bookTitle{font-family:var(--serif);font-weight:700;font-size:19px;color:var(--text);margin-top:2px;line-height:1.3}
 #bookAuthor{font-family:var(--serif);font-style:italic;font-size:13px;color:var(--crimson);margin-top:3px}
 #bookProv{font-size:10.5px;color:var(--text-2);margin-top:6px;letter-spacing:.3px}
-.bklbl{font-size:10px;letter-spacing:2px;color:#e8a020;margin-top:14px;margin-bottom:5px}
+.bklbl{font-size:11px;letter-spacing:2px;color:#e8a020;margin-top:16px;margin-bottom:7px}
 #bookThesis{font-size:13px;line-height:1.6;color:var(--text)}
 .bkap{font-size:12.5px;line-height:1.55;color:var(--text);margin-bottom:7px;padding-left:14px;position:relative}
 .bkap::before{content:"";position:absolute;left:0;top:7px;width:5px;height:5px;border-radius:50%;background:var(--crimson)}
 .bkk{color:var(--crimson);font-weight:600}
 .vsep{height:1px;background:rgba(224,18,43,.28);margin:15px 0 2px}
-#verseText{font-family:var(--serif);font-style:italic;font-size:13px;line-height:1.6;color:var(--text)}
-#verseRef{font-family:var(--serif);font-size:11.5px;letter-spacing:1px;color:var(--crimson);margin-top:5px}
+#verseText{font-family:var(--serif);font-style:italic;font-size:15.5px;line-height:1.7;color:var(--text)}
+#verseRef{font-family:var(--serif);font-size:13px;letter-spacing:1px;color:var(--crimson);margin-top:7px}
 #bookLine{font-family:var(--serif);font-style:italic;font-size:13px;line-height:1.55;color:var(--text);border-left:3px solid var(--crimson);padding-left:11px;margin-top:13px}
 @media(max-width:420px){#bookShare{font-size:9.5px;padding:4px 8px;top:7px;right:8px}#bookTitle{font-size:17px}}
 #quoteCard{position:relative}
@@ -310,7 +310,7 @@ details .body i{color:var(--text-3)}
 #quoteShare::before{content:"\25C8 ";opacity:.85}
 #quoteShare:hover{background:rgba(224,18,43,.16);box-shadow:0 0 12px rgba(224,18,43,.25)}
 @media(max-width:420px){#quoteShare{font-size:9.5px;padding:4px 8px;top:7px;right:8px}}
-#quoteSrc{font-family:var(--serif);font-size:11.5px;letter-spacing:1px;color:var(--crimson);text-shadow:0 0 10px rgba(224,18,43,.3)}
+#quoteSrc{font-family:var(--serif);font-size:13px;letter-spacing:1px;color:var(--crimson);text-shadow:0 0 10px rgba(224,18,43,.3)}
 @media (max-width:760px){.chkgrid{grid-template-columns:1fr;gap:4px}#grpA{columns:2;column-gap:8px}#grpB{columns:2;column-gap:8px}#tab-checklist.editing #grpA,#grpB.editing{columns:1}.phil{grid-template-columns:1fr}.model{grid-template-columns:1fr}.gal img{max-height:220px}#lbIG{flex-direction:column}.lb-text{flex:1;max-width:none;border-right:none;border-top:1px solid var(--line);order:2;padding:16px 16px 24px}.lb-img{flex:0 0 48vh;order:1;border-bottom:1px solid var(--line)}}
 @media (max-width:640px){.frow{grid-template-columns:1fr}.caprow{grid-template-columns:1fr}.tadd{grid-template-columns:1fr 1fr}}
 @media (max-width:540px){#grpA,#grpB{columns:1}header.top .creed{font-size:14.5px}}
@@ -2415,8 +2415,12 @@ function buildBookCard() {
 function buildQuoteCard(){
   var cv=document.createElement("canvas");
   var W=1080, H=1350, pad=64;
-  cv.width=W; cv.height=H;
+  /* Lay out in 1080-space but rasterise at 2x: the saved PNG is 2160x2700 so the
+     type stays sharp full-screen on a high-DPI phone instead of looking soft. */
+  var SS=2;
+  cv.width=W*SS; cv.height=H*SS;
   var ctx=cv.getContext("2d");
+  ctx.scale(SS,SS);
   var F_SERIF="'Georgia',serif";
   var F_SANS="system-ui,-apple-system,'Segoe UI',Arial,sans-serif";
 
@@ -2442,36 +2446,41 @@ function buildQuoteCard(){
   ctx.fillText(brand, pad, pad);
 
   ctx.textAlign="right";
-  ctx.font="italic 19px "+F_SERIF;
+  ctx.font="italic 23px "+F_SERIF;
   ctx.fillStyle="#f0eaeb";
   ctx.fillText(TR("There are no shortcuts to riches."), W-pad, pad+2);
   ctx.fillStyle="#e0122b";
-  ctx.fillText(TR("Stay disciplined to your system."), W-pad, pad+2+26);
+  ctx.fillText(TR("Stay disciplined to your system."), W-pad, pad+2+31);
   ctx.textAlign="left";
 
   // 4. Quote of the day
   var p=nyParts();
   var q=QUOTES[dayOfYear(p)%QUOTES.length];
   var quoteText=TR(q.t);
-  var maxWidth=W-2*pad-80;
-  var fontSize=62;
-  var lines, lineHeight;
-  while(fontSize>=26){
+  /* One type scale, used by BOTH the measure pass and the draw pass so they cannot drift. */
+  var ATTR=40, ATTR_GAP=66;
+  var V_LBL=22, V_TXT=34, V_LH=47, V_REF=27, V_GAP=70;
+  var maxWidth=W-2*pad-16;
+  var attrGap=ATTR_GAP, attrH=ATTR;
+  /* Measure the verse FIRST, then shrink the quote until the whole group fits the band -
+     otherwise a long quote plus a long verse would run straight into the footer. */
+  var vday=verseOfDay();
+  ctx.font="italic "+V_TXT+"px "+F_SERIF;
+  var vLines=wrapLines(ctx, vday.txt, W-2*pad-24);
+  var vBlock=V_GAP + V_LBL+10 + vLines.length*V_LH + V_REF+12;
+  var fontSize, lines, lineHeight, blockH;
+  for(fontSize=92; fontSize>=34; fontSize-=4){
     ctx.font="italic "+fontSize+"px "+F_SERIF;
     lines=wrapLines(ctx, quoteText, maxWidth);
-    if(lines.length<=6) break;
-    fontSize-=4;
+    lineHeight=Math.round(fontSize*1.28);
+    blockH=lines.length*lineHeight + attrGap + attrH + vBlock;
+    if(lines.length<=7 && blockH<=(H-pad-52)-(pad+104)) break;
   }
-  if(fontSize<26) fontSize=26;
   ctx.font="italic "+fontSize+"px "+F_SERIF;
-  lineHeight=Math.round(fontSize*1.32);
-  var attrGap=56, attrH=30;
-  var vday=verseOfDay();
-  ctx.font="italic 24px "+F_SERIF;
-  var vLines=wrapLines(ctx, vday.txt, W-2*pad-120);
-  var vBlock=54 + 26 + vLines.length*34 + 30;
-  var blockH=lines.length*lineHeight + attrGap + attrH + vBlock;
-  var startY=H*0.50 - blockH/2;
+  /* Centre inside the band BETWEEN header and footer - centring on H/2 ignored the
+     header and left the bottom third of the card empty. */
+  var bandTop=pad+104, bandBot=H-pad-52;
+  var startY=bandTop + Math.max(0,((bandBot-bandTop)-blockH)/2);
   ctx.font="italic "+fontSize+"px "+F_SERIF;
   ctx.textAlign="center";
   ctx.fillStyle="#f0eaeb";
@@ -2480,27 +2489,27 @@ function buildQuoteCard(){
   }
 
   // 5. Attribution
-  var attrY=startY + lines.length*lineHeight + 56;
-  ctx.font="italic 30px "+F_SERIF;
+  var attrY=startY + lines.length*lineHeight + attrGap;
+  ctx.font="italic "+ATTR+"px "+F_SERIF;
   ctx.fillStyle="#e0122b";
   ctx.fillText("— " + q.s, W/2, attrY);
 
   // 5b. Verse of the day
-  var vy=attrY + attrH + 54;
-  ctx.strokeStyle="rgba(224,18,43,0.30)"; ctx.lineWidth=1;
-  ctx.beginPath(); ctx.moveTo(W/2-150, vy-24); ctx.lineTo(W/2+150, vy-24); ctx.stroke();
-  ctx.fillStyle="#e8a020"; ctx.font="bold 18px "+F_SANS;
-  ctx.fillText(TR("VERSE OF THE DAY"), W/2, vy); vy+=26;
-  ctx.fillStyle="#f0eaeb"; ctx.font="italic 24px "+F_SERIF;
-  for(var vi=0;vi<vLines.length;vi++){ ctx.fillText(vLines[vi], W/2, vy); vy+=34; }
-  ctx.fillStyle="#e0122b"; ctx.font="20px "+F_SERIF;
-  ctx.fillText("— "+vday.ref, W/2, vy+4);
+  var vy=attrY + attrH + V_GAP;
+  ctx.strokeStyle="rgba(224,18,43,0.32)"; ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.moveTo(W/2-190, vy-32); ctx.lineTo(W/2+190, vy-32); ctx.stroke();
+  ctx.fillStyle="#e8a020"; ctx.font="bold "+V_LBL+"px "+F_SANS;
+  ctx.fillText(TR("VERSE OF THE DAY"), W/2, vy); vy+=V_LBL+10;
+  ctx.fillStyle="#f0eaeb"; ctx.font="italic "+V_TXT+"px "+F_SERIF;
+  for(var vi=0;vi<vLines.length;vi++){ ctx.fillText(vLines[vi], W/2, vy); vy+=V_LH; }
+  ctx.fillStyle="#e0122b"; ctx.font=V_REF+"px "+F_SERIF;
+  ctx.fillText("— "+vday.ref, W/2, vy+8);
 
   // 6. Footer
   var dateStr=p.y+"-"+("0"+p.mo).slice(-2)+"-"+("0"+p.d).slice(-2);
   ctx.textBaseline="alphabetic";
-  ctx.font="20px "+F_SANS;
-  ctx.fillStyle="#8a7a7d";
+  ctx.font="24px "+F_SANS;
+  ctx.fillStyle="#9a8a8d";
   ctx.textAlign="left";
   ctx.fillText(dateStr, pad, H-pad);
   ctx.textAlign="right";
