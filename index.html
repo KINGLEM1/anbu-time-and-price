@@ -379,7 +379,7 @@ details .body i{color:var(--text-3)}
 
   <div class="gt" style="margin-top:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">DAILY DISCIPLINE — END OF DAY <button class="btn" id="dlyEdit" style="min-height:30px;padding:4px 9px">EDIT</button></div>
   <div id="grpB"></div>
-  <div id="verTag" data-noi18n>ANBU v48 · build 2026-07-21</div>
+  <div id="verTag" data-noi18n>ANBU v50 · build 2026-07-21</div>
 
   <div class="card" id="syncCard">
     <div class="qlbl">BACKUP &amp; TRANSFER</div>
@@ -1767,16 +1767,51 @@ function savePhotos(files,ctx){
     return failed;
   });
 }
+function idbAllKeys(){
+  return idbReady.then(function(){return new Promise(function(r){
+    if(!idbDB)return r([]);
+    try{
+      var q=idbDB.transaction("media").objectStore("media").getAllKeys();
+      q.onsuccess=function(){ r(q.result||[]); };
+      q.onerror=function(){ r([]); };
+    }catch(e){ r([]); }
+  });});
+}
+/* The localStorage index is only a fast MIRROR of IndexedDB. If localStorage is full,
+   blocked (private mode / site-data restrictions) or simply out of sync, that mirror stops
+   updating - and then every new photo is told "slot 1 is free" and overwrites the previous
+   one. So the allocator asks IndexedDB directly, and the mirror is rebuilt at startup. */
+function nextPhotoKeyLive(base){
+  return idbAllKeys().then(function(keys){
+    var set={}; for(var i=0;i<keys.length;i++) set[keys[i]]=1;
+    if(!set[base])return base;
+    for(var n=2;n<=MAX_PHOTOS;n++){ if(!set[base+"~"+n])return base+"~"+n; }
+    return null;
+  });
+}
+function rebuildMediaIdx(){
+  return idbAllKeys().then(function(keys){
+    if(!keys||!keys.length)return;
+    var built={}; for(var i=0;i<keys.length;i++) built[String(keys[i])]=1;
+    var cur=mediaIdx(), same=Object.keys(cur).length===keys.length;
+    if(same){ for(var k in built){ if(!cur[k]){ same=false; break; } } }
+    if(!same){ lsSet("anbu_mediaidx",built); try{console.info("ANBU: media index rebuilt from IndexedDB ("+keys.length+" photos)");}catch(e){} }
+  }).catch(function(){});
+}
 function savePhotoRaw(file,ctx){
   if(!file||!ctx||String(file.type).indexOf("image/")!==0)return Promise.resolve();
   const base=baseKeyOf(ctx);
-  /* P&L overwrites its single slot; the rest fill the next free one. */
-  const k=(ctx.stage==="pnl")?base:(nextPhotoKey(base)||base);
+  /* P&L overwrites its single slot; the rest take the next slot IndexedDB says is free. */
+  const pick=(ctx.stage==="pnl")?Promise.resolve(base):nextPhotoKeyLive(base);
+  return pick.then(function(picked){
+  const k=picked||base;
   return idbSet(k,{blob:file,name:file.name||"photo",ts:Date.now()}).then(()=>{
     if(urlCache[k]){URL.revokeObjectURL(urlCache[k]);delete urlCache[k];}
     idxAdd(k);
-    /* The photo is saved by this point. Redraw failures must never reject this promise,
-       or the next file in a multi-select batch would never be written. */
+    /* Heal the mirror from IndexedDB BEFORE redrawing. Otherwise a mirror that had gone
+       stale keeps hiding photos that are genuinely stored - the thumbnail strip would show
+       one image while three sit in the database. */
+    return rebuildMediaIdx().then(function(){
     try{
       if(ctx.trade!==undefined){
         refreshThumbsTrade(ctx.date,ctx.trade,ctx.stage); renderCal();
@@ -1785,6 +1820,8 @@ function savePhotoRaw(file,ctx){
         refreshThumbs(ctx.date,ctx.stage); renderCal();
       }
     }catch(e){ try{console.warn("ANBU: redraw after save failed",e);}catch(_){} }
+    });
+  });
   });
 }
 $("#filePhoto").addEventListener("change",()=>{
@@ -2809,6 +2846,11 @@ $("#langSw").addEventListener("click",e=>{const b=e.target.closest("[data-lang]"
 /* ---------- INIT ---------- */
 document.addEventListener("DOMContentLoaded",()=>{
   loadSecOverrides();
+  /* self-heal a stale/blocked photo index before anything reads it */
+  try{ rebuildMediaIdx().then(function(){
+    try{ if(typeof renderCapToday==="function")renderCapToday(); }catch(e){}
+    try{ if(typeof renderCal==="function")renderCal(); }catch(e){}
+  }); }catch(e){}
   renderQuote();
   try{renderBook();}catch(e){}
   initChecklist();
